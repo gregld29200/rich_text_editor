@@ -23,6 +23,7 @@ interface TipTapEditorProps {
   isCodeMode: boolean;
   toggleCodeMode: () => void;
   editable?: boolean;
+  onEditorReady?: (editor: Editor) => void;
 }
 
 // Toolbar Button Component
@@ -159,6 +160,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
   isCodeMode,
   toggleCodeMode,
   editable = true,
+  onEditorReady,
 }) => {
   const editor = useEditor({
     extensions: [
@@ -203,6 +205,13 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
       editor.setEditable(editable);
     }
   }, [editor, editable]);
+
+  // Notify parent when editor is ready
+  useEffect(() => {
+    if (editor && onEditorReady) {
+      onEditorReady(editor);
+    }
+  }, [editor, onEditorReady]);
 
   // Code mode (raw HTML editing)
   if (isCodeMode) {

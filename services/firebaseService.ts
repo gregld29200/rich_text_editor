@@ -87,8 +87,19 @@ export const loadSectionContent = async (sectionId: string): Promise<{ content: 
   return null;
 };
 
+// Firestore limit is ~1MB per field, use 900KB as safe limit
+const MAX_CONTENT_SIZE = 900 * 1024; // 900KB in bytes
+
 export const saveSectionContent = async (sectionId: string, content: string, status: SectionStatus) => {
   if (!db) return;
+  
+  // Check content size before saving
+  const contentSize = new Blob([content]).size;
+  if (contentSize > MAX_CONTENT_SIZE) {
+    const sizeKB = Math.round(contentSize / 1024);
+    throw new Error(`Le contenu est trop volumineux (${sizeKB} Ko). Limite: 900 Ko. Divisez ce chapitre en plusieurs parties.`);
+  }
+  
   const sectionRef = doc(db, 'books', BOOK_ID, 'sections', sectionId);
   await setDoc(sectionRef, { content, status, lastUpdated: Date.now() }, { merge: true });
 };

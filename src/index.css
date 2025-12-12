@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+/* Custom Theme Colors */
+@theme {
+  --color-brand-green: #2D4A3E;
+  --color-brand-sage: #9CAF88;
+  --color-brand-gold: #C9A962;
+  --color-brand-beige: #F5E6D3;
+  --color-brand-white: #FAF8F5;
+  
+  --font-title: "Playfair Display", serif;
+  --font-body: "Lora", serif;
+  --font-deco: "Cormorant Garamond", serif;
+}
+
+/* Custom Print Styles for PDF Export */
+@media print {
+  @page {
+    size: 6in 9in;
+    margin: 0.75in;
+  }
+  body {
+    background: white;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .book-page {
+    box-shadow: none !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+}
+
+/* Print Simulation Mode (On Screen) */
+.print-simulation {
+  background-color: white !important;
+  color: black !important;
+}
+.print-simulation h1 {
+  color: black !important;
+  font-family: "Garamond", "Times New Roman", serif !important;
+}
+.print-simulation h2 {
+  color: #333 !important;
+  font-family: "Garamond", "Times New Roman", serif !important;
+  font-style: italic;
+}
+.print-simulation .decorative-separator {
+  display: none !important;
+}
+.print-simulation .print-separator {
+  display: block !important;
+  text-align: center;
+  margin: 2rem 0;
+}
+.print-simulation blockquote {
+  background: none !important;
+  border-left: 2px solid black !important;
+  color: black !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* Editor specific styles */
+.rich-editor-content h1 {
+  font-family: "Playfair Display", serif;
+  color: #2d4a3e;
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+.rich-editor-content h2 {
+  font-family: "Cormorant Garamond", serif;
+  color: #c9a962;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  text-align: center;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+.rich-editor-content p {
+  font-family: "Lora", serif;
+  color: #1f2937;
+  margin-bottom: 1rem;
+  line-height: 1.625;
+  text-align: justify;
+}
+.rich-editor-content blockquote {
+  background-color: #f5e6d3;
+  padding: 1.5rem;
+  border-left: 4px solid #9caf88;
+  margin: 1.5rem 0;
+  border-radius: 0.125rem;
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  color: #2d4a3e;
+}

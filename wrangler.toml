@@ -1,0 +1,9 @@
+# Cloudflare Pages configuration
+name = "sante-dans-assiette-editor"
+compatibility_date = "2024-01-01"
+
+# Pages-specific settings
+pages_build_output_dir = "dist"
+
+# No environment variables needed - Firebase config is in code
+# Gemini API key is stored in localStorage

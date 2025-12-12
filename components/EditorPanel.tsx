@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Editor } from '@tiptap/react';
 import { BookSection, SectionStatus, AIRequestOptions, BookVersion, SemanticBlockType } from '../types';
 import { Wand2, Save, Edit3, History as HistoryIcon, Loader2 } from './Icons';
 import { processContentWithAI, isAIAvailable } from '../services/geminiService';
@@ -20,6 +21,7 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ section, onUpdate }) => {
   const [showAiMenu, setShowAiMenu] = useState(false);
   const [isCodeMode, setIsCodeMode] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const editorRef = useRef<Editor | null>(null);
 
   useEffect(() => {
     if (section) {
@@ -77,10 +79,20 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ section, onUpdate }) => {
   };
 
   const handleInsertBlock = (blockType: SemanticBlockType, htmlContent: string) => {
-    // Insert the block HTML at the end of current content
-    const newContent = content + '\n' + htmlContent;
-    setContent(newContent);
-    setHasUnsavedChanges(true);
+    // Use TipTap's API to insert content at cursor position
+    if (editorRef.current) {
+      editorRef.current.chain().focus().insertContent(htmlContent).run();
+      setHasUnsavedChanges(true);
+    } else {
+      // Fallback: append to content if editor not available
+      const newContent = content + '\n' + htmlContent;
+      setContent(newContent);
+      setHasUnsavedChanges(true);
+    }
+  };
+
+  const handleEditorReady = (editor: Editor) => {
+    editorRef.current = editor;
   };
 
   if (!section) {
@@ -245,6 +257,7 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ section, onUpdate }) => {
               onChange={handleContentChange} 
               isCodeMode={isCodeMode}
               toggleCodeMode={() => setIsCodeMode(!isCodeMode)}
+              onEditorReady={handleEditorReady}
             />
           </div>
         </>

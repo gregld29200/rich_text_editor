@@ -94,36 +94,53 @@ export const getMaskedApiKey = (): string => {
  */
 export const testApiKey = async (apiKey: string): Promise<{ valid: boolean; error?: string }> => {
   try {
-    // Import GoogleGenAI dynamically to avoid issues
-    const { GoogleGenAI } = await import('@google/genai');
-    
-    const ai = new GoogleGenAI({ apiKey });
-    
-    // Make a minimal test request
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: 'Say "OK" and nothing else.',
-      config: {
-        maxOutputTokens: 10,
+    // Use fetch to test the API key directly with Google's REST API
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: 'Say OK' }]
+          }],
+          generationConfig: {
+            maxOutputTokens: 10,
+          }
+        }),
       }
-    });
+    );
     
-    if (response.text) {
-      return { valid: true };
+    if (response.ok) {
+      const data = await response.json();
+      if (data.candidates && data.candidates.length > 0) {
+        return { valid: true };
+      }
+      return { valid: true }; // Response OK even if format is different
     }
     
-    return { valid: false, error: 'No response from API' };
-  } catch (error: any) {
-    const errorMessage = error?.message || 'Unknown error';
+    // Handle error responses
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData?.error?.message || `HTTP ${response.status}`;
     
-    if (errorMessage.includes('API key')) {
-      return { valid: false, error: 'Invalid API key' };
+    if (response.status === 400 || response.status === 401 || response.status === 403) {
+      return { valid: false, error: 'Clé API invalide' };
     }
     
-    if (errorMessage.includes('quota')) {
-      return { valid: false, error: 'API quota exceeded' };
+    if (response.status === 429) {
+      return { valid: false, error: 'Quota API dépassé' };
     }
     
     return { valid: false, error: errorMessage };
+  } catch (error: any) {
+    console.error('API Key test error:', error);
+    
+    if (error.message?.includes('Failed to fetch')) {
+      return { valid: false, error: 'Erreur réseau - vérifiez votre connexion' };
+    }
+    
+    return { valid: false, error: error.message || 'Erreur inconnue' };
   }
 };

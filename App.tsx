@@ -6,7 +6,7 @@ import EditorPanel from './components/EditorPanel';
 import SettingsModal from './components/SettingsModal';
 import { BookStructure, BookSection, SectionStatus, BookVersion, ViewMode } from './types';
 import IMPORTED_BOOK_DATA from './data/bookContent';
-import { Download, Printer, Settings, FileUp, Volume2, Square, Loader2, HelpCircle } from './components/Icons';
+import { Download, Printer, Settings, FileUp, Volume2, Square, Loader2, HelpCircle, RotateCcw } from './components/Icons';
 import WelcomeGuide, { useWelcomeGuide } from './components/WelcomeGuide';
 import { 
   initFirebase, 
@@ -19,6 +19,7 @@ import {
 } from './services/firebaseService';
 import { generateChapterAudio } from './services/geminiService';
 import { getApiKey } from './utils/apiKeyManager';
+import { analyzeDocumentAggressive } from './services/documentAnalyzer';
 
 function App() {
   const [bookData, setBookData] = useState<BookStructure>(IMPORTED_BOOK_DATA);
@@ -326,49 +327,88 @@ function App() {
     if (!file) return;
 
     if (file.name.endsWith('.docx')) {
+      // Ask user what to do
+      const action = confirm(
+        "Comment voulez-vous importer ce document ?\n\n" +
+        "OK = Analyser et remplacer tout le contenu\n" +
+        "(Le document sera divisé automatiquement en parties et chapitres)\n\n" +
+        "Annuler = Ne pas importer"
+      );
+      
+      if (!action) {
+        event.target.value = '';
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onload = async (e) => {
         const arrayBuffer = e.target?.result as ArrayBuffer;
         try {
+          // Convert DOCX to HTML
           const result = await mammoth.convertToHtml({ arrayBuffer });
-          const newId = `imported-${Date.now()}`;
-          const newChapter: BookSection = {
-            id: newId,
-            title: `Import: ${file.name}`,
-            content: result.value,
-            status: SectionStatus.DRAFT,
-            history: []
-          };
           
-          const updatedBook = {
-            parts: [
-              ...bookData.parts,
-              {
-                id: `part-import-${Date.now()}`,
-                title: "Documents Importés",
-                chapters: [newChapter]
-              }
-            ]
-          };
-
-          setBookData(updatedBook);
-          setCurrentSectionId(newChapter.id);
+          // Analyze and structure the document
+          const documentTitle = file.name.replace('.docx', '').replace(/_/g, ' ');
+          const analyzedBook = analyzeDocumentAggressive(result.value, documentTitle);
           
-          if(firebaseActive) {
-            await saveSectionContent(newId, newChapter.content, SectionStatus.DRAFT);
-            await saveBookStructure(updatedBook);
+          // Show summary
+          const totalChapters = analyzedBook.parts.reduce((sum, p) => sum + p.chapters.length, 0);
+          const partsList = analyzedBook.parts.map(p => `  • ${p.title} (${p.chapters.length} chapitres)`).join('\n');
+          
+          const confirmImport = confirm(
+            `Document analysé avec succès !\n\n` +
+            `Structure détectée :\n` +
+            `${partsList}\n\n` +
+            `Total : ${analyzedBook.parts.length} parties, ${totalChapters} chapitres\n\n` +
+            `Confirmer l'import ?`
+          );
+          
+          if (!confirmImport) {
+            event.target.value = '';
+            return;
           }
           
-          alert(`Fichier importé avec succès !`);
-        } catch (err) {
+          // Update state with analyzed book
+          setBookData(analyzedBook);
+          
+          // Select first chapter
+          const firstChapterId = analyzedBook.parts[0]?.chapters[0]?.id || null;
+          setCurrentSectionId(firstChapterId);
+          
+          // Save to Firebase if active
+          const failedChapters: string[] = [];
+          if (firebaseActive) {
+            await saveBookStructure(analyzedBook);
+            for (const part of analyzedBook.parts) {
+              for (const chapter of part.chapters) {
+                try {
+                  await saveSectionContent(chapter.id, chapter.content, chapter.status);
+                } catch (saveErr: any) {
+                  console.error(`Failed to save chapter "${chapter.title}":`, saveErr);
+                  failedChapters.push(chapter.title);
+                }
+              }
+            }
+          }
+          
+          if (failedChapters.length > 0) {
+            alert(`Import partiellement réussi !\n\n${analyzedBook.parts.length} parties et ${totalChapters} chapitres créés.\n\n⚠️ ${failedChapters.length} chapitre(s) trop volumineux pour Firebase:\n- ${failedChapters.join('\n- ')}\n\nCes chapitres sont disponibles localement mais ne seront pas synchronisés. Divisez-les en parties plus petites.`);
+          } else {
+            alert(`Import réussi !\n\n${analyzedBook.parts.length} parties et ${totalChapters} chapitres créés.\n\nVous pouvez maintenant éditer chaque chapitre individuellement.`);
+          }
+          
+        } catch (err: any) {
           console.error(err);
-          alert("Erreur lors de la lecture du fichier DOCX.");
+          alert(`Erreur lors de l'analyse du fichier DOCX:\n${err.message || 'Erreur inconnue'}`);
         }
       };
       reader.readAsArrayBuffer(file);
     } else {
       alert("Veuillez sélectionner un fichier .docx");
     }
+    
+    // Reset the input to allow re-importing the same file
+    event.target.value = '';
   };
 
   return (
@@ -451,6 +491,19 @@ function App() {
                     <span className="hidden sm:inline">Importer DOCX</span>
                     <input type="file" accept=".docx" className="hidden" onChange={handleFileUpload} />
                 </label>
+
+                <button 
+                    onClick={() => {
+                      if (confirm("Réinitialiser tout le contenu avec les données importées originales ?")) {
+                        handleResetToDefault();
+                      }
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 text-orange-600 hover:bg-orange-50 rounded text-sm font-medium border border-orange-200"
+                    title="Réinitialiser le contenu"
+                >
+                    <RotateCcw className="w-4 h-4" />
+                    <span className="hidden sm:inline">Réinitialiser</span>
+                </button>
 
                 <button 
                     onClick={handlePrint}

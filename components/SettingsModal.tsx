@@ -54,23 +54,53 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     try {
       let cleanStr = configStr.trim();
       
-      if (cleanStr.includes('=')) {
-        cleanStr = cleanStr.substring(cleanStr.indexOf('=') + 1);
+      // Remove import statements
+      cleanStr = cleanStr.replace(/import\s+.*?;/gs, '');
+      
+      // Remove comments
+      cleanStr = cleanStr.replace(/\/\/.*$/gm, '');
+      cleanStr = cleanStr.replace(/\/\*[\s\S]*?\*\//g, '');
+      
+      // Remove everything before firebaseConfig = 
+      const configMatch = cleanStr.match(/firebaseConfig\s*=\s*(\{[\s\S]*?\});?/);
+      if (configMatch) {
+        cleanStr = configMatch[1];
+      } else if (cleanStr.includes('{')) {
+        // Try to extract just the object
+        const startIdx = cleanStr.indexOf('{');
+        const endIdx = cleanStr.lastIndexOf('}');
+        if (startIdx !== -1 && endIdx !== -1) {
+          cleanStr = cleanStr.substring(startIdx, endIdx + 1);
+        }
       }
       
+      // Remove trailing semicolon
+      cleanStr = cleanStr.trim();
       if (cleanStr.endsWith(';')) {
         cleanStr = cleanStr.slice(0, -1);
       }
+      
+      // Remove const app = ... and other code after the object
+      cleanStr = cleanStr.replace(/\}\s*;?\s*(const|let|var|\/\/)[\s\S]*/g, '}');
 
-      cleanStr = cleanStr.replace(/(\w+):/g, '"$1":');
+      // Convert JS object to valid JSON (add quotes to keys)
+      cleanStr = cleanStr.replace(/([{,]\s*)(\w+)\s*:/g, '$1"$2":');
+      
+      // Remove trailing commas before closing braces
       cleanStr = cleanStr.replace(/,(\s*})/g, '$1');
 
       const config = JSON.parse(cleanStr);
+      
+      // Validate that we have required Firebase fields
+      if (!config.apiKey || !config.projectId) {
+        throw new Error('Missing required fields');
+      }
+      
       onSaveFirebase(config);
       onClose();
     } catch (e) {
-      console.error(e);
-      setError("Format invalide. Copiez simplement l'objet { ... } ou le bloc de code complet fourni par Firebase.");
+      console.error('Firebase config parse error:', e);
+      setError("Format invalide. Copiez le bloc de configuration Firebase complet ou juste l'objet { apiKey: ..., projectId: ... }");
     }
   };
 
