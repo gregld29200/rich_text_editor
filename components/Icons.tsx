@@ -52,7 +52,12 @@ import {
   Sparkles,
   FileDown,
   Palette,
-  HelpCircle
+  HelpCircle,
+  MessageSquareText,
+  Send,
+  Bot,
+  Pencil,
+  Check
 } from 'lucide-react';
 
 export { 
@@ -108,5 +113,10 @@ export {
   Sparkles,
   FileDown,
   Palette,
-  HelpCircle
+  HelpCircle,
+  MessageSquareText,
+  Send,
+  Bot,
+  Pencil,
+  Check
 };
