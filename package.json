@@ -9,13 +9,21 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
-    "lucide-react": "^0.560.0",
     "@google/genai": "^1.33.0",
+    "@tiptap/extension-color": "^3.13.0",
+    "@tiptap/extension-placeholder": "^3.13.0",
+    "@tiptap/extension-text-align": "^3.13.0",
+    "@tiptap/extension-text-style": "^3.13.0",
+    "@tiptap/extension-underline": "^3.13.0",
+    "@tiptap/pm": "^3.13.0",
+    "@tiptap/react": "^3.13.0",
+    "@tiptap/starter-kit": "^3.13.0",
     "diff": "5.1.0",
+    "firebase": "^12.6.0",
+    "lucide-react": "^0.560.0",
     "mammoth": "1.6.0",
-    "firebase": "^12.6.0"
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

@@ -5,7 +5,7 @@ import BookPreview from './components/BookPreview';
 import EditorPanel from './components/EditorPanel';
 import SettingsModal from './components/SettingsModal';
 import { BookStructure, BookSection, SectionStatus, BookVersion, ViewMode } from './types';
-import { MOCK_BOOK_DATA } from './constants';
+import IMPORTED_BOOK_DATA from './data/bookContent';
 import { Download, Printer, Settings, FileUp, Volume2, Square, Loader2 } from './components/Icons';
 import { 
   initFirebase, 
@@ -19,8 +19,10 @@ import {
 import { generateChapterAudio } from './services/geminiService';
 
 function App() {
-  const [bookData, setBookData] = useState<BookStructure>(MOCK_BOOK_DATA);
-  const [currentSectionId, setCurrentSectionId] = useState<string | null>('c1');
+  const [bookData, setBookData] = useState<BookStructure>(IMPORTED_BOOK_DATA);
+  const [currentSectionId, setCurrentSectionId] = useState<string | null>(
+    IMPORTED_BOOK_DATA.parts[0]?.chapters[0]?.id || null
+  );
   const [apiKeyMissing, setApiKeyMissing] = useState(!process.env.API_KEY);
   const [viewMode, setViewMode] = useState<ViewMode>('WEB');
   const [showSettings, setShowSettings] = useState(false);
@@ -161,7 +163,8 @@ function App() {
       summary: `Modification ${new Date().toLocaleTimeString()}`
     };
 
-    const newBookData = {
+    const newBookData: BookStructure = {
+      ...bookData,
       parts: bookData.parts.map(part => ({
         ...part,
         chapters: part.chapters.map(chapter => {
@@ -175,7 +178,7 @@ function App() {
           }
           return chapter;
         })
-      })
+      }))
     };
     
     setBookData(newBookData);
@@ -200,8 +203,9 @@ function App() {
 
   const handleSelectApiKey = async () => {
       try {
-          if(window.aistudio && window.aistudio.openSelectKey){
-             await window.aistudio.openSelectKey();
+          const win = window as Window & { aistudio?: { openSelectKey?: () => Promise<void> } };
+          if(win.aistudio && win.aistudio.openSelectKey){
+             await win.aistudio.openSelectKey();
              setApiKeyMissing(false);
           } else {
               alert("L'interface de sélection de clé API n'est pas disponible.");
@@ -214,30 +218,32 @@ function App() {
 
   // --- Reset Feature ---
   const handleResetToDefault = async () => {
+    const firstChapterId = IMPORTED_BOOK_DATA.parts[0]?.chapters[0]?.id || null;
+    
     if(!firebaseActive) {
-      setBookData(MOCK_BOOK_DATA);
-      setCurrentSectionId('c1');
+      setBookData(IMPORTED_BOOK_DATA);
+      setCurrentSectionId(firstChapterId);
       setShowSettings(false);
       return;
     }
 
-    if(!confirm("Attention : Ceci va écraser la structure actuelle du livre avec le contenu par défaut. Les chapitres existants dans la base de données ne seront pas supprimés mais la navigation sera réinitialisée. Continuer ?")) return;
+    if(!confirm("Attention : Ceci va écraser la structure actuelle du livre avec le contenu importé. Les chapitres existants dans la base de données ne seront pas supprimés mais la navigation sera réinitialisée. Continuer ?")) return;
     
     setIsLoadingContent(true);
     try {
-      // 1. Save full MOCK structure
-      await saveBookStructure(MOCK_BOOK_DATA);
+      // 1. Save full imported structure
+      await saveBookStructure(IMPORTED_BOOK_DATA);
       
-      // 2. Save all content from MOCK
-      for(const part of MOCK_BOOK_DATA.parts) {
+      // 2. Save all content from imported data
+      for(const part of IMPORTED_BOOK_DATA.parts) {
         for(const chapter of part.chapters) {
           await saveSectionContent(chapter.id, chapter.content, chapter.status);
         }
       }
       
       // 3. Update local
-      setBookData(MOCK_BOOK_DATA);
-      setCurrentSectionId('c1');
+      setBookData(IMPORTED_BOOK_DATA);
+      setCurrentSectionId(firstChapterId);
       alert("Contenu réinitialisé avec succès !");
     } catch(e) {
       console.error(e);
@@ -257,10 +263,10 @@ function App() {
       
       if (remoteStructure) {
         // --- SMART MERGE LOGIC ---
-        // Check for new parts in MOCK_BOOK_DATA that are NOT in remoteStructure
+        // Check for new parts in IMPORTED_BOOK_DATA that are NOT in remoteStructure
         // This ensures new code updates (like Phase 7, 8...) appear even if DB is old
         const remotePartIds = new Set(remoteStructure.parts.map(p => p.id));
-        const newParts = MOCK_BOOK_DATA.parts.filter(p => !remotePartIds.has(p.id));
+        const newParts = IMPORTED_BOOK_DATA.parts.filter(p => !remotePartIds.has(p.id));
         
         if (newParts.length > 0) {
            console.log("New content detected in code, merging into database...", newParts.map(p => p.title));
@@ -473,7 +479,7 @@ function App() {
 
         {/* Content Area */}
         <div className="flex-1 flex overflow-hidden">
-            <BookPreview section={getCurrentSection()} viewMode={viewMode} />
+            <BookPreview section={getCurrentSection()} theme={viewMode === 'WEB' ? 'web' : 'print'} />
             <EditorPanel section={getCurrentSection()} onUpdate={handleUpdateSection} />
         </div>
       </div>

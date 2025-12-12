@@ -1,0 +1,519 @@
+/* ============================================
+   BASE SEMANTIC STYLES
+   Defines all semantic class names used in content
+   These classes are theme-agnostic structure definitions
+   ============================================ */
+
+/* ========== CSS Variables (Shared) ========== */
+:root {
+  /* Brand Colors */
+  --vert-bouteille: #2D4A3E;
+  --vert-sauge: #9CAF88;
+  --vert-sauge-clair: #B8C9A9;
+  --or-doux: #C9A962;
+  --beige-lin: #F5F0E8;
+  --beige-chaud: #E8DFD0;
+  --blanc-casse: #FDFBF7;
+  --rose-poudre: #E8D5D5;
+  --rose-doux: #D4B8B8;
+  --terre-cuite: #C4A484;
+  
+  /* Text Colors */
+  --text-dark: #2C2C2C;
+  --text-medium: #4A4A4A;
+  --text-light: #6B6B6B;
+  
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  
+  /* Typography */
+  --font-title: 'Playfair Display', Georgia, serif;
+  --font-body: 'Lora', Georgia, serif;
+  --font-accent: 'Cormorant Garamond', Georgia, serif;
+}
+
+/* ========== Chapter Structure ========== */
+.chapter {
+  margin-bottom: var(--spacing-xl);
+  page-break-inside: avoid;
+}
+
+.chapter-header {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+}
+
+.chapter-number {
+  font-family: var(--font-accent);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: var(--spacing-xs);
+}
+
+.chapter-title {
+  font-family: var(--font-title);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: var(--spacing-sm);
+}
+
+.subtitle, .sous-titre {
+  font-family: var(--font-title);
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: var(--spacing-lg) 0 var(--spacing-md) 0;
+  padding-left: var(--spacing-md);
+}
+
+.sub-subtitle {
+  font-family: var(--font-title);
+  font-size: 1rem;
+  font-weight: 500;
+  margin: var(--spacing-md) 0 var(--spacing-sm) 0;
+}
+
+/* ========== Text Elements ========== */
+.paragraph, .book-content p {
+  font-family: var(--font-body);
+  text-align: justify;
+  margin-bottom: var(--spacing-md);
+  line-height: 1.7;
+}
+
+.paragraph-indent {
+  text-indent: 1.5em;
+}
+
+.drop-cap, .lettrine {
+  float: left;
+  font-family: var(--font-title);
+  font-size: 3rem;
+  line-height: 0.8;
+  padding-right: 0.5rem;
+  padding-top: 0.25rem;
+  font-weight: 600;
+}
+
+/* ========== Separators ========== */
+.separator {
+  text-align: center;
+  margin: var(--spacing-lg) 0;
+  letter-spacing: 0.3em;
+  font-size: 0.9rem;
+}
+
+.separator-simple {
+  border: none;
+  height: 1px;
+  margin: var(--spacing-lg) 0;
+}
+
+/* ========== Special Blocks: Religious ========== */
+.hadith-box {
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin: var(--spacing-md) 0;
+  border-radius: 6px;
+  text-align: center;
+  font-style: italic;
+}
+
+.hadith-box p {
+  text-indent: 0;
+  margin-bottom: var(--spacing-sm);
+}
+
+.hadith-box p:last-child {
+  margin-bottom: 0;
+}
+
+.hadith-source {
+  font-size: 0.85rem;
+  margin-top: var(--spacing-sm);
+  font-style: normal;
+}
+
+.verse-box {
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin: var(--spacing-md) 0;
+  border-radius: 6px;
+  text-align: center;
+  font-style: italic;
+}
+
+.verse-box p {
+  text-indent: 0;
+  margin-bottom: var(--spacing-sm);
+}
+
+.verse-source {
+  font-size: 0.85rem;
+  margin-top: var(--spacing-sm);
+  font-style: normal;
+}
+
+/* ========== Special Blocks: Informational ========== */
+.info-box {
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.info-box p {
+  text-indent: 0;
+  margin-bottom: var(--spacing-sm);
+}
+
+.info-box p:last-child {
+  margin-bottom: 0;
+}
+
+.tip-box {
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  border-radius: 8px;
+}
+
+.tip-box p {
+  text-indent: 0;
+  margin-bottom: var(--spacing-sm);
+}
+
+.warning-box {
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  border-radius: 0 6px 6px 0;
+}
+
+.warning-box p {
+  text-indent: 0;
+  margin-bottom: var(--spacing-sm);
+}
+
+.warning-title {
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+.study-box {
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.study-box p {
+  text-indent: 0;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* ========== Special Blocks: Content-Specific ========== */
+.anecdote-box {
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  border-radius: 8px;
+}
+
+.anecdote-box p {
+  text-indent: 0;
+  margin-bottom: var(--spacing-sm);
+  font-size: 0.95rem;
+}
+
+.anecdote-number {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 24px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-right: var(--spacing-sm);
+}
+
+/* Plant/Herb boxes */
+.plant-box {
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin: var(--spacing-sm) 0;
+  border-radius: 6px;
+}
+
+.plant-box p {
+  text-indent: 0;
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+.plant-number {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-right: var(--spacing-sm);
+}
+
+.plant-name {
+  font-weight: 600;
+}
+
+/* Mineral/Vitamin boxes */
+.mineral-box, .vitamin-box {
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin: var(--spacing-sm) 0;
+  border-radius: 6px;
+}
+
+.mineral-box p, .vitamin-box p {
+  text-indent: 0;
+  margin-bottom: var(--spacing-xs);
+  font-size: 0.9rem;
+}
+
+.mineral-name, .vitamin-name {
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+/* Recipe cards */
+.recipe-card {
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  border-radius: 8px;
+}
+
+.recipe-title {
+  font-family: var(--font-title);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+.recipe-ingredients {
+  margin-bottom: var(--spacing-md);
+}
+
+.recipe-instructions {
+  margin-bottom: var(--spacing-sm);
+}
+
+.recipe-card p {
+  text-indent: 0;
+  margin-bottom: var(--spacing-sm);
+  font-size: 0.9rem;
+}
+
+/* Cause/Effect boxes (for inflammation, etc) */
+.cause-box {
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin: var(--spacing-sm) 0;
+  border-radius: 6px;
+}
+
+.cause-title {
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+.cause-box p {
+  text-indent: 0;
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+/* Disease/Condition boxes */
+.maladie-box {
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin: var(--spacing-sm) 0;
+  border-radius: 0 6px 6px 0;
+}
+
+.maladie-nom {
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+.maladie-box p {
+  text-indent: 0;
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+/* ========== Lists ========== */
+.styled-list {
+  list-style: disc;
+  padding-left: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+.styled-list li {
+  margin-bottom: var(--spacing-xs);
+  line-height: 1.6;
+}
+
+.numbered-list {
+  list-style: decimal;
+  padding-left: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+.numbered-list li {
+  margin-bottom: var(--spacing-xs);
+  line-height: 1.6;
+}
+
+/* ========== Tables ========== */
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--spacing-md) 0;
+  font-size: 0.9rem;
+}
+
+.styled-table th,
+.styled-table td {
+  padding: var(--spacing-sm);
+  text-align: left;
+  border-bottom: 1px solid var(--beige-chaud);
+}
+
+.styled-table th {
+  font-weight: 600;
+}
+
+/* ========== Citation Block ========== */
+.citation-box {
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin: var(--spacing-md) 0;
+  border-radius: 6px;
+  text-align: center;
+  font-style: italic;
+}
+
+.citation-box p {
+  text-indent: 0;
+  margin-bottom: 0;
+}
+
+/* ========== Utility Classes ========== */
+.text-center {
+  text-align: center;
+}
+
+.text-justify {
+  text-align: justify;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.font-bold {
+  font-weight: 600;
+}
+
+.font-italic {
+  font-style: italic;
+}
+
+.mt-1 { margin-top: var(--spacing-sm); }
+.mt-2 { margin-top: var(--spacing-md); }
+.mb-1 { margin-bottom: var(--spacing-sm); }
+.mb-2 { margin-bottom: var(--spacing-md); }
+
+/* ========== Page Structure (for Print) ========== */
+.page-break {
+  page-break-after: always;
+}
+
+.no-page-break {
+  page-break-inside: avoid;
+}
+
+/* ========== Cover Page ========== */
+.cover-page {
+  text-align: center;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+.cover-title {
+  font-family: var(--font-title);
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.cover-subtitle {
+  font-family: var(--font-title);
+  font-size: 1.5rem;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.cover-author {
+  font-family: var(--font-title);
+  font-size: 1.25rem;
+  margin-top: var(--spacing-xl);
+}
+
+/* ========== Table of Contents ========== */
+.toc {
+  padding: var(--spacing-lg) 0;
+}
+
+.toc-title {
+  font-family: var(--font-title);
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.toc-part {
+  font-family: var(--font-title);
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.toc-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: var(--spacing-xs) 0 var(--spacing-xs) var(--spacing-md);
+}
+
+.toc-item-title {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+}
+
+.toc-item-page {
+  font-family: var(--font-accent);
+  font-size: 0.9rem;
+}
+
+/* ========== Footer ========== */
+.page-footer {
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-md);
+  text-align: center;
+  font-size: 0.8rem;
+}

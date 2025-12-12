@@ -1,0 +1,339 @@
+/* ============================================
+   WEB THEME - Rich, Branded Experience
+   Full colors, gradients, shadows, hover effects
+   For the online editor preview
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Lora:ital,wght@0,400;0,500;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+
+/* ========== Web Theme Container ========== */
+.theme-web {
+  background: var(--blanc-casse);
+  color: var(--text-dark);
+  font-family: var(--font-body);
+  line-height: 1.7;
+}
+
+/* ========== Chapter Structure ========== */
+.theme-web .chapter-header {
+  border-bottom: 1px solid var(--vert-sauge);
+}
+
+.theme-web .chapter-number {
+  color: var(--vert-sauge);
+}
+
+.theme-web .chapter-title {
+  color: var(--vert-bouteille);
+}
+
+.theme-web .subtitle,
+.theme-web .sous-titre {
+  color: var(--vert-bouteille);
+  border-left: 3px solid var(--vert-sauge);
+}
+
+.theme-web .sub-subtitle {
+  color: var(--vert-bouteille);
+}
+
+/* ========== Text Elements ========== */
+.theme-web .drop-cap,
+.theme-web .lettrine {
+  color: var(--vert-bouteille);
+}
+
+/* ========== Separators ========== */
+.theme-web .separator {
+  color: var(--vert-sauge);
+}
+
+.theme-web .separator-simple {
+  background: linear-gradient(to right, transparent, var(--vert-sauge), transparent);
+}
+
+/* ========== Special Blocks: Religious ========== */
+.theme-web .hadith-box {
+  background: var(--vert-bouteille);
+  color: white;
+  box-shadow: 0 2px 8px rgba(45, 74, 62, 0.2);
+}
+
+.theme-web .hadith-box p {
+  color: white;
+}
+
+.theme-web .hadith-source {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.theme-web .verse-box {
+  background: linear-gradient(135deg, var(--or-doux) 0%, var(--terre-cuite) 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(201, 169, 98, 0.3);
+}
+
+.theme-web .verse-box p {
+  color: white;
+}
+
+.theme-web .verse-source {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ========== Special Blocks: Informational ========== */
+.theme-web .info-box {
+  background: linear-gradient(135deg, rgba(156, 175, 136, 0.15) 0%, rgba(245, 240, 232, 0.4) 100%);
+  border-left: 4px solid var(--vert-sauge);
+}
+
+.theme-web .tip-box {
+  background: var(--beige-chaud);
+  border-left: 4px solid var(--or-doux);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.theme-web .warning-box {
+  background: rgba(232, 213, 213, 0.5);
+  border-left: 4px solid var(--rose-doux);
+}
+
+.theme-web .warning-title {
+  color: #8B5A5A;
+}
+
+.theme-web .study-box {
+  background: rgba(245, 240, 232, 0.6);
+  border-left: 4px solid var(--vert-bouteille);
+}
+
+/* ========== Special Blocks: Content-Specific ========== */
+.theme-web .anecdote-box {
+  background: var(--beige-chaud);
+  border: 1px solid var(--terre-cuite);
+}
+
+.theme-web .anecdote-number {
+  background: var(--vert-bouteille);
+  color: white;
+}
+
+.theme-web .plant-box {
+  background: rgba(156, 175, 136, 0.1);
+  border-left: 3px solid var(--vert-sauge);
+}
+
+.theme-web .plant-number {
+  background: var(--vert-sauge);
+  color: white;
+}
+
+.theme-web .plant-name {
+  color: var(--vert-bouteille);
+}
+
+.theme-web .mineral-box,
+.theme-web .vitamin-box {
+  background: rgba(201, 169, 98, 0.12);
+  border-left: 3px solid var(--or-doux);
+}
+
+.theme-web .mineral-name,
+.theme-web .vitamin-name {
+  color: var(--or-doux);
+}
+
+.theme-web .recipe-card {
+  background: white;
+  border: 1px solid var(--beige-chaud);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.theme-web .recipe-title {
+  color: var(--vert-bouteille);
+}
+
+.theme-web .cause-box {
+  background: rgba(201, 169, 98, 0.15);
+  border-left: 3px solid var(--or-doux);
+}
+
+.theme-web .cause-title {
+  color: var(--or-doux);
+}
+
+.theme-web .maladie-box {
+  background: rgba(196, 68, 68, 0.08);
+  border-left: 4px solid #C44444;
+}
+
+.theme-web .maladie-nom {
+  color: #C44444;
+}
+
+/* ========== Lists ========== */
+.theme-web .styled-list {
+  list-style: none;
+}
+
+.theme-web .styled-list li::before {
+  content: "•";
+  color: var(--vert-sauge);
+  font-weight: bold;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+}
+
+/* ========== Tables ========== */
+.theme-web .styled-table th {
+  background: var(--vert-sauge);
+  color: white;
+}
+
+.theme-web .styled-table tr:nth-child(even) {
+  background: rgba(156, 175, 136, 0.08);
+}
+
+/* ========== Citation Block ========== */
+.theme-web .citation-box {
+  background: var(--vert-bouteille);
+  color: white;
+  box-shadow: 0 2px 6px rgba(45, 74, 62, 0.2);
+}
+
+.theme-web .citation-box p {
+  color: white;
+}
+
+/* ========== Cover Page ========== */
+.theme-web .cover-page {
+  background: linear-gradient(135deg, var(--vert-bouteille) 0%, #1E3329 100%);
+  color: var(--blanc-casse);
+}
+
+.theme-web .cover-title {
+  color: var(--blanc-casse);
+}
+
+.theme-web .cover-subtitle {
+  color: var(--or-doux);
+}
+
+.theme-web .cover-author {
+  color: var(--blanc-casse);
+}
+
+/* ========== Table of Contents ========== */
+.theme-web .toc-title {
+  color: var(--vert-bouteille);
+}
+
+.theme-web .toc-part {
+  color: var(--vert-bouteille);
+}
+
+.theme-web .toc-item {
+  border-bottom: 1px dotted var(--vert-sauge);
+}
+
+.theme-web .toc-item-page {
+  color: var(--vert-sauge);
+}
+
+/* ========== Footer ========== */
+.theme-web .page-footer {
+  border-top: 1px solid var(--beige-chaud);
+  color: var(--text-light);
+}
+
+/* ========== Book Page Container ========== */
+.theme-web .book-page {
+  background: var(--blanc-casse);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* ========== Interactive Elements ========== */
+.theme-web .hadith-box:hover,
+.theme-web .verse-box:hover,
+.theme-web .citation-box:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+.theme-web .info-box:hover,
+.theme-web .tip-box:hover,
+.theme-web .warning-box:hover,
+.theme-web .study-box:hover {
+  background-color: rgba(156, 175, 136, 0.2);
+  transition: background-color 0.2s ease;
+}
+
+/* ========== Scrollbar Styling ========== */
+.theme-web::-webkit-scrollbar {
+  width: 8px;
+}
+
+.theme-web::-webkit-scrollbar-track {
+  background: var(--beige-lin);
+}
+
+.theme-web::-webkit-scrollbar-thumb {
+  background: var(--vert-sauge);
+  border-radius: 4px;
+}
+
+.theme-web::-webkit-scrollbar-thumb:hover {
+  background: var(--vert-bouteille);
+}
+
+/* ========== Selection ========== */
+.theme-web ::selection {
+  background: var(--vert-sauge-clair);
+  color: var(--vert-bouteille);
+}
+
+/* ========== Links ========== */
+.theme-web a {
+  color: var(--vert-bouteille);
+  text-decoration: underline;
+  text-decoration-color: var(--vert-sauge);
+}
+
+.theme-web a:hover {
+  color: var(--vert-sauge);
+}
+
+/* ========== Strong/Em ========== */
+.theme-web strong {
+  color: var(--vert-bouteille);
+  font-weight: 600;
+}
+
+.theme-web em {
+  font-style: italic;
+}
+
+/* ========== Blockquote (default) ========== */
+.theme-web blockquote {
+  background: var(--beige-lin);
+  border-left: 4px solid var(--vert-sauge);
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  font-style: italic;
+  border-radius: 0 8px 8px 0;
+}
+
+.theme-web blockquote p {
+  margin-bottom: var(--spacing-sm);
+  text-indent: 0;
+}
+
+/* ========== Horizontal Rule ========== */
+.theme-web hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--vert-sauge), transparent);
+  margin: var(--spacing-lg) 0;
+}

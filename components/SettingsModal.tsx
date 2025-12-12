@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Save, X, RotateCcw } from './Icons';
+import { Save, X, RotateCcw, Key, CheckCircle, AlertCircle, Loader2 } from './Icons';
+import { 
+  getApiKey, 
+  saveApiKey, 
+  clearApiKey, 
+  getMaskedApiKey, 
+  isValidApiKeyFormat,
+  testApiKey 
+} from '../utils/apiKeyManager';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -7,32 +15,54 @@ interface SettingsModalProps {
   onSaveFirebase: (config: any) => void;
   hasFirebase: boolean;
   onResetContent: () => void;
+  onApiKeyChange?: () => void;
 }
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onSaveFirebase, hasFirebase, onResetContent }) => {
+const SettingsModal: React.FC<SettingsModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  onSaveFirebase, 
+  hasFirebase, 
+  onResetContent,
+  onApiKeyChange 
+}) => {
   const [configStr, setConfigStr] = useState('');
   const [error, setError] = useState('');
+  
+  // API Key state
+  const [apiKey, setApiKey] = useState('');
+  const [apiKeyStatus, setApiKeyStatus] = useState<'none' | 'saved' | 'testing' | 'valid' | 'invalid'>('none');
+  const [apiKeyError, setApiKeyError] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Check if we have a saved API key
+      const existingKey = getApiKey();
+      if (existingKey) {
+        setApiKeyStatus('saved');
+        setApiKey(''); // Don't show the actual key
+      } else {
+        setApiKeyStatus('none');
+      }
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleSave = () => {
+  const handleSaveFirebase = () => {
     try {
       let cleanStr = configStr.trim();
       
-      // 1. Remove "const firebaseConfig =" or "var config =" if present
       if (cleanStr.includes('=')) {
         cleanStr = cleanStr.substring(cleanStr.indexOf('=') + 1);
       }
       
-      // 2. Remove trailing semicolon
       if (cleanStr.endsWith(';')) {
         cleanStr = cleanStr.slice(0, -1);
       }
 
-      // 3. Try to make it valid JSON if keys aren't quoted (standard JS object)
-      // This is a simple regex to quote unquoted keys
       cleanStr = cleanStr.replace(/(\w+):/g, '"$1":');
-      // Remove trailing commas which are valid in JS but not JSON
       cleanStr = cleanStr.replace(/,(\s*})/g, '$1');
 
       const config = JSON.parse(cleanStr);
@@ -41,6 +71,89 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onSaveFi
     } catch (e) {
       console.error(e);
       setError("Format invalide. Copiez simplement l'objet { ... } ou le bloc de code complet fourni par Firebase.");
+    }
+  };
+
+  const handleSaveApiKey = async () => {
+    setApiKeyError('');
+    
+    if (!apiKey.trim()) {
+      setApiKeyError('Veuillez entrer une clé API');
+      return;
+    }
+
+    if (!isValidApiKeyFormat(apiKey)) {
+      setApiKeyError('Format de clé invalide. Les clés Gemini commencent par "AIza"');
+      return;
+    }
+
+    setApiKeyStatus('testing');
+
+    // Test the API key
+    const result = await testApiKey(apiKey);
+    
+    if (result.valid) {
+      saveApiKey(apiKey);
+      setApiKeyStatus('valid');
+      setApiKey('');
+      onApiKeyChange?.();
+      
+      // Reset to saved state after a delay
+      setTimeout(() => {
+        setApiKeyStatus('saved');
+      }, 2000);
+    } else {
+      setApiKeyStatus('invalid');
+      setApiKeyError(result.error || 'Clé API invalide');
+    }
+  };
+
+  const handleClearApiKey = () => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer la clé API ?')) {
+      clearApiKey();
+      setApiKeyStatus('none');
+      setApiKey('');
+      onApiKeyChange?.();
+    }
+  };
+
+  const getApiKeyStatusDisplay = () => {
+    switch (apiKeyStatus) {
+      case 'saved':
+        return (
+          <div className="flex items-center gap-2 text-green-600 text-sm">
+            <CheckCircle className="w-4 h-4" />
+            <span>Clé enregistrée: {getMaskedApiKey()}</span>
+          </div>
+        );
+      case 'testing':
+        return (
+          <div className="flex items-center gap-2 text-blue-600 text-sm">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>Test de la clé en cours...</span>
+          </div>
+        );
+      case 'valid':
+        return (
+          <div className="flex items-center gap-2 text-green-600 text-sm">
+            <CheckCircle className="w-4 h-4" />
+            <span>Clé valide et enregistrée!</span>
+          </div>
+        );
+      case 'invalid':
+        return (
+          <div className="flex items-center gap-2 text-red-600 text-sm">
+            <AlertCircle className="w-4 h-4" />
+            <span>{apiKeyError}</span>
+          </div>
+        );
+      default:
+        return (
+          <div className="flex items-center gap-2 text-gray-500 text-sm">
+            <AlertCircle className="w-4 h-4" />
+            <span>Aucune clé configurée</span>
+          </div>
+        );
     }
   };
 
@@ -53,6 +166,85 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onSaveFi
         </div>
         
         <div className="p-6 overflow-y-auto">
+          {/* API Key Section */}
+          <div className="mb-6 pb-6 border-b border-gray-100">
+            <h3 className="font-bold text-gray-700 mb-2 flex items-center gap-2">
+              <Key className="w-4 h-4 text-brand-gold" />
+              Clé API Gemini (IA & Audio)
+            </h3>
+            <p className="text-sm text-gray-500 mb-3">
+              Nécessaire pour les fonctionnalités IA et la lecture audio.
+              <a 
+                href="https://aistudio.google.com/apikey" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-brand-green hover:underline ml-1"
+              >
+                Obtenir une clé
+              </a>
+            </p>
+            
+            {/* Status Display */}
+            <div className="mb-3">
+              {getApiKeyStatusDisplay()}
+            </div>
+            
+            {/* Input Field */}
+            <div className="flex gap-2">
+              <input 
+                type={showApiKey ? "text" : "password"}
+                className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm font-mono bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-sage"
+                placeholder="AIza..."
+                value={apiKey}
+                onChange={(e) => {
+                  setApiKey(e.target.value);
+                  setApiKeyError('');
+                  if (apiKeyStatus === 'invalid') setApiKeyStatus('none');
+                }}
+              />
+              <button
+                onClick={() => setShowApiKey(!showApiKey)}
+                className="px-3 py-2 border border-gray-300 rounded text-gray-600 hover:bg-gray-50 text-sm"
+              >
+                {showApiKey ? 'Masquer' : 'Voir'}
+              </button>
+            </div>
+            
+            {apiKeyError && apiKeyStatus !== 'invalid' && (
+              <p className="text-red-500 text-xs mt-1">{apiKeyError}</p>
+            )}
+            
+            {/* Action Buttons */}
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={handleSaveApiKey}
+                disabled={apiKeyStatus === 'testing' || !apiKey.trim()}
+                className="flex-1 bg-brand-green text-white px-4 py-2 rounded hover:bg-opacity-90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {apiKeyStatus === 'testing' ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                {apiKeyStatus === 'testing' ? 'Test...' : 'Enregistrer'}
+              </button>
+              
+              {apiKeyStatus === 'saved' && (
+                <button
+                  onClick={handleClearApiKey}
+                  className="px-4 py-2 border border-red-200 text-red-600 rounded hover:bg-red-50 transition-colors"
+                >
+                  Supprimer
+                </button>
+              )}
+            </div>
+            
+            <p className="text-xs text-gray-400 mt-2">
+              La clé est stockée localement dans votre navigateur.
+            </p>
+          </div>
+
+          {/* Firebase Section */}
           <div className="mb-6">
             <h3 className="font-bold text-gray-700 mb-2 flex items-center gap-2">
               <span className={`w-3 h-3 rounded-full ${hasFirebase ? 'bg-green-500' : 'bg-red-500'}`}></span>
@@ -64,12 +256,20 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onSaveFi
               Copiez le bloc de configuration complet et collez-le ci-dessous.
             </p>
             <textarea 
-              className="w-full h-40 border border-gray-300 rounded p-2 text-xs font-mono bg-gray-50"
+              className="w-full h-32 border border-gray-300 rounded p-2 text-xs font-mono bg-gray-50"
               placeholder='const firebaseConfig = { ... };'
               value={configStr}
               onChange={(e) => setConfigStr(e.target.value)}
             />
             {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+            
+            <button 
+              onClick={handleSaveFirebase}
+              className="mt-2 px-4 py-2 bg-brand-green text-white rounded hover:bg-opacity-90 flex items-center gap-2"
+            >
+              <Save className="w-4 h-4" />
+              Connecter Firebase
+            </button>
           </div>
           
           <div className="bg-blue-50 p-4 rounded text-sm text-blue-800 mb-6">
@@ -89,11 +289,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onSaveFi
           </div>
         </div>
         
-        <div className="p-4 border-t border-gray-100 flex justify-end gap-2">
-           <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Annuler</button>
-           <button onClick={handleSave} className="px-4 py-2 bg-brand-green text-white rounded hover:bg-opacity-90 flex items-center gap-2">
-             <Save className="w-4 h-4" />
-             Connecter
+        <div className="p-4 border-t border-gray-100 flex justify-end">
+           <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+             Fermer
            </button>
         </div>
       </div>

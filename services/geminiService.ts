@@ -1,13 +1,21 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 import { SYSTEM_INSTRUCTION, SEPARATOR_HTML } from '../constants';
 import { AIRequestOptions } from '../types';
+import { getApiKey, hasApiKey } from '../utils/apiKeyManager';
 
 const getAiClient = () => {
-  const apiKey = process.env.API_KEY;
+  const apiKey = getApiKey();
   if (!apiKey) {
-    throw new Error("API Key is missing. Please select an API Key.");
+    throw new Error("Clé API manquante. Veuillez configurer votre clé API Gemini dans les Paramètres.");
   }
   return new GoogleGenAI({ apiKey });
+};
+
+/**
+ * Check if AI features are available (API key is configured)
+ */
+export const isAIAvailable = (): boolean => {
+  return hasApiKey();
 };
 
 export const processContentWithAI = async (

@@ -1,0 +1,426 @@
+/* ============================================
+   PRINT THEME - Kindle/PDF Optimized
+   Grayscale, simple borders, no shadows
+   Optimized for 6x9 inch book format
+   ============================================ */
+
+/* ========== Print Theme Container ========== */
+.theme-print {
+  background: white;
+  color: #2D2D2D;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 11pt;
+  line-height: 1.6;
+}
+
+/* ========== Page Setup for 6x9 Book ========== */
+.theme-print .book-page {
+  width: 6in;
+  min-height: 9in;
+  padding: 0.75in 0.6in;
+  margin: 0 auto;
+  background: white;
+  box-shadow: none;
+}
+
+@media print {
+  .theme-print .book-page {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+  }
+  
+  @page {
+    size: 6in 9in;
+    margin: 0.75in 0.6in;
+  }
+}
+
+/* ========== Chapter Structure ========== */
+.theme-print .chapter {
+  page-break-inside: avoid;
+}
+
+.theme-print .chapter-header {
+  border-bottom: 1px solid #666;
+  padding-bottom: 0.2in;
+  margin-bottom: 0.3in;
+}
+
+.theme-print .chapter-number {
+  font-family: 'Georgia', serif;
+  color: #666;
+  font-size: 10pt;
+}
+
+.theme-print .chapter-title {
+  font-family: 'Georgia', serif;
+  font-size: 18pt;
+  color: #000;
+}
+
+.theme-print .subtitle,
+.theme-print .sous-titre {
+  font-family: 'Georgia', serif;
+  font-size: 13pt;
+  color: #333;
+  border-left: 2px solid #666;
+  padding-left: 0.15in;
+  margin: 0.25in 0 0.15in 0;
+}
+
+.theme-print .sub-subtitle {
+  font-family: 'Georgia', serif;
+  font-size: 11pt;
+  color: #333;
+}
+
+/* ========== Text Elements ========== */
+.theme-print .paragraph,
+.theme-print p {
+  font-family: 'Georgia', serif;
+  text-align: justify;
+  margin-bottom: 0.12in;
+  text-indent: 0.2in;
+}
+
+.theme-print p:first-of-type {
+  text-indent: 0;
+}
+
+.theme-print .drop-cap,
+.theme-print .lettrine {
+  font-family: 'Georgia', serif;
+  font-size: 42pt;
+  color: #333;
+  padding-right: 0.08in;
+}
+
+/* ========== Separators ========== */
+.theme-print .separator {
+  color: #666;
+  font-size: 10pt;
+}
+
+.theme-print .separator-simple {
+  background: #999;
+}
+
+/* ========== Special Blocks: Religious ========== */
+.theme-print .hadith-box {
+  background: #f5f5f5;
+  border: 1px solid #999;
+  border-left: 3px solid #333;
+  padding: 0.15in;
+  color: #333;
+}
+
+.theme-print .hadith-box p {
+  color: #333;
+  font-style: italic;
+}
+
+.theme-print .hadith-source {
+  color: #666;
+  font-size: 9pt;
+}
+
+.theme-print .verse-box {
+  background: #f9f9f9;
+  border: 2px double #666;
+  padding: 0.15in;
+  color: #333;
+}
+
+.theme-print .verse-box p {
+  color: #333;
+  font-style: italic;
+}
+
+.theme-print .verse-source {
+  color: #666;
+  font-size: 9pt;
+}
+
+/* ========== Special Blocks: Informational ========== */
+.theme-print .info-box {
+  background: #fafafa;
+  border-left: 2px solid #666;
+  padding: 0.12in;
+}
+
+.theme-print .tip-box {
+  background: #f5f5f5;
+  border: 1px dashed #999;
+  padding: 0.12in;
+}
+
+.theme-print .warning-box {
+  background: #fff;
+  border: 1px solid #666;
+  border-left: 3px solid #333;
+  padding: 0.12in;
+}
+
+.theme-print .warning-title {
+  color: #333;
+  font-weight: bold;
+}
+
+.theme-print .study-box {
+  background: #f8f8f8;
+  border-left: 2px solid #333;
+  padding: 0.12in;
+  font-size: 10pt;
+}
+
+/* ========== Special Blocks: Content-Specific ========== */
+.theme-print .anecdote-box {
+  background: #f5f5f5;
+  border: 1px solid #ccc;
+  padding: 0.15in;
+}
+
+.theme-print .anecdote-number {
+  background: #333;
+  color: white;
+}
+
+.theme-print .plant-box {
+  background: #fafafa;
+  border-left: 2px solid #666;
+  padding: 0.1in 0.12in;
+}
+
+.theme-print .plant-number {
+  background: #666;
+  color: white;
+}
+
+.theme-print .plant-name {
+  color: #333;
+}
+
+.theme-print .mineral-box,
+.theme-print .vitamin-box {
+  background: #f8f8f8;
+  border-left: 2px solid #999;
+  padding: 0.1in 0.12in;
+}
+
+.theme-print .mineral-name,
+.theme-print .vitamin-name {
+  color: #333;
+}
+
+.theme-print .recipe-card {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 0.15in;
+  page-break-inside: avoid;
+}
+
+.theme-print .recipe-title {
+  color: #333;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.08in;
+  margin-bottom: 0.1in;
+}
+
+.theme-print .cause-box {
+  background: #f9f9f9;
+  border-left: 2px solid #999;
+  padding: 0.1in 0.12in;
+}
+
+.theme-print .cause-title {
+  color: #333;
+}
+
+.theme-print .maladie-box {
+  background: #fff;
+  border-left: 2px solid #666;
+  padding: 0.1in 0.12in;
+}
+
+.theme-print .maladie-nom {
+  color: #333;
+}
+
+/* ========== Lists ========== */
+.theme-print .styled-list {
+  list-style: disc;
+}
+
+.theme-print .styled-list li {
+  margin-bottom: 0.05in;
+}
+
+.theme-print .numbered-list li {
+  margin-bottom: 0.05in;
+}
+
+/* ========== Tables ========== */
+.theme-print .styled-table th {
+  background: #e5e5e5;
+  color: #333;
+  font-weight: bold;
+  border: 1px solid #999;
+}
+
+.theme-print .styled-table td {
+  border: 1px solid #ccc;
+}
+
+/* ========== Citation Block ========== */
+.theme-print .citation-box {
+  background: #f5f5f5;
+  border: 1px solid #999;
+  color: #333;
+}
+
+.theme-print .citation-box p {
+  color: #333;
+}
+
+/* ========== Cover Page ========== */
+.theme-print .cover-page {
+  background: white;
+  color: #333;
+  page-break-after: always;
+}
+
+.theme-print .cover-title {
+  color: #000;
+  font-size: 28pt;
+}
+
+.theme-print .cover-subtitle {
+  color: #333;
+  font-size: 16pt;
+}
+
+.theme-print .cover-author {
+  color: #333;
+}
+
+/* ========== Table of Contents ========== */
+.theme-print .toc {
+  page-break-after: always;
+}
+
+.theme-print .toc-title {
+  color: #000;
+}
+
+.theme-print .toc-part {
+  color: #333;
+}
+
+.theme-print .toc-item {
+  border-bottom: 1px dotted #999;
+}
+
+.theme-print .toc-item-page {
+  color: #666;
+}
+
+/* ========== Footer ========== */
+.theme-print .page-footer {
+  border-top: 1px solid #ccc;
+  color: #666;
+  font-size: 9pt;
+}
+
+/* ========== Blockquote ========== */
+.theme-print blockquote {
+  background: #f8f8f8;
+  border-left: 2px solid #666;
+  padding: 0.12in;
+  margin: 0.15in 0;
+  font-style: italic;
+}
+
+.theme-print blockquote p {
+  text-indent: 0;
+}
+
+/* ========== Horizontal Rule ========== */
+.theme-print hr {
+  border: none;
+  height: 1px;
+  background: #999;
+  margin: 0.2in 0;
+}
+
+/* ========== Strong/Em ========== */
+.theme-print strong {
+  font-weight: bold;
+}
+
+.theme-print em {
+  font-style: italic;
+}
+
+/* ========== No Interactivity ========== */
+.theme-print a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ========== Page Break Utilities ========== */
+.theme-print .page-break {
+  page-break-after: always;
+}
+
+.theme-print .no-page-break {
+  page-break-inside: avoid;
+}
+
+.theme-print .chapter {
+  page-break-before: always;
+}
+
+.theme-print .chapter:first-child {
+  page-break-before: avoid;
+}
+
+/* ========== Widow/Orphan Control ========== */
+.theme-print p {
+  orphans: 3;
+  widows: 3;
+}
+
+/* ========== Print-Specific Adjustments ========== */
+@media print {
+  .theme-print .no-print {
+    display: none !important;
+  }
+  
+  .theme-print .book-page {
+    box-shadow: none;
+    border: none;
+  }
+  
+  .theme-print .hadith-box,
+  .theme-print .verse-box,
+  .theme-print .info-box,
+  .theme-print .tip-box,
+  .theme-print .warning-box {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* ========== Kindle-Specific Optimizations ========== */
+/* These help with reflowable content on Kindle */
+.theme-print img {
+  max-width: 100%;
+  height: auto;
+}
+
+.theme-print .recipe-card,
+.theme-print .styled-table {
+  page-break-inside: avoid;
+}
