@@ -51,7 +51,8 @@ import {
   BookMarked,
   Sparkles,
   FileDown,
-  Palette
+  Palette,
+  HelpCircle
 } from 'lucide-react';
 
 export { 
@@ -106,5 +107,6 @@ export {
   BookMarked,
   Sparkles,
   FileDown,
-  Palette
+  Palette,
+  HelpCircle
 };

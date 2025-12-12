@@ -6,7 +6,8 @@ import EditorPanel from './components/EditorPanel';
 import SettingsModal from './components/SettingsModal';
 import { BookStructure, BookSection, SectionStatus, BookVersion, ViewMode } from './types';
 import IMPORTED_BOOK_DATA from './data/bookContent';
-import { Download, Printer, Settings, FileUp, Volume2, Square, Loader2 } from './components/Icons';
+import { Download, Printer, Settings, FileUp, Volume2, Square, Loader2, HelpCircle } from './components/Icons';
+import WelcomeGuide, { useWelcomeGuide } from './components/WelcomeGuide';
 import { 
   initFirebase, 
   saveBookStructure, 
@@ -17,17 +18,22 @@ import {
   loadSectionHistory
 } from './services/firebaseService';
 import { generateChapterAudio } from './services/geminiService';
+import { getApiKey } from './utils/apiKeyManager';
 
 function App() {
   const [bookData, setBookData] = useState<BookStructure>(IMPORTED_BOOK_DATA);
   const [currentSectionId, setCurrentSectionId] = useState<string | null>(
     IMPORTED_BOOK_DATA.parts[0]?.chapters[0]?.id || null
   );
-  const [apiKeyMissing, setApiKeyMissing] = useState(!process.env.API_KEY);
+  // API key is optional - app works without AI features
+  const [apiKeyMissing, setApiKeyMissing] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('WEB');
   const [showSettings, setShowSettings] = useState(false);
   const [firebaseActive, setFirebaseActive] = useState(false);
   const [isLoadingContent, setIsLoadingContent] = useState(false);
+
+  // Welcome Guide
+  const { showGuide, closeGuide, reopenGuide } = useWelcomeGuide();
 
   // Audio State
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
@@ -376,21 +382,8 @@ function App() {
         onResetContent={handleResetToDefault}
       />
 
-      {/* Missing Key Overlay */}
-      {apiKeyMissing && (
-        <div className="absolute inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center p-4">
-             <div className="bg-white rounded-lg p-8 max-w-md w-full shadow-2xl text-center">
-                 <h2 className="text-2xl font-title text-brand-green mb-4">Bienvenue</h2>
-                 <p className="text-gray-600 mb-6 font-body">Pour utiliser les fonctionnalités d'IA, connectez votre clé Gemini.</p>
-                 <button 
-                    onClick={handleSelectApiKey}
-                    className="w-full py-3 bg-brand-gold text-white font-bold rounded hover:bg-opacity-90 transition"
-                 >
-                    Sélectionner Clé API
-                 </button>
-             </div>
-        </div>
-      )}
+      {/* Welcome Guide */}
+      {showGuide && <WelcomeGuide onClose={closeGuide} />}
 
       {/* Main Layout */}
       <Sidebar 
@@ -467,6 +460,14 @@ function App() {
                     Export PDF
                 </button>
                 
+                <button 
+                  onClick={reopenGuide}
+                  className="p-2 rounded-full hover:bg-gray-100 text-gray-400 transition-colors"
+                  title="Guide d'utilisation"
+                >
+                  <HelpCircle className="w-5 h-5" />
+                </button>
+
                 <button 
                   onClick={() => setShowSettings(true)}
                   className={`p-2 rounded-full transition-colors ${firebaseActive ? 'bg-green-100 text-green-700' : 'hover:bg-gray-100 text-gray-400'}`}

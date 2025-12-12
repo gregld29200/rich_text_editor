@@ -3,7 +3,7 @@ import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
-import Underline from '@tiptap/extension-underline';
+// Note: Underline is included in StarterKit, no need to import separately
 import { 
   Bold, 
   Italic, 
@@ -173,7 +173,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
-      Underline,
+      // Underline is already included in StarterKit
     ],
     content,
     editable,
