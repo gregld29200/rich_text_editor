@@ -195,3 +195,32 @@ export interface FirebaseSectionData {
   lastUpdated: number;
   wordCount?: number;
 }
+
+// ============================================
+// Table Conversion Types (List → Table)
+// ============================================
+
+export interface TableData {
+  headers: string[];
+  rows: TableRow[];
+}
+
+export interface TableRow {
+  cells: TableCell[];
+}
+
+export interface TableCell {
+  content: string;
+  subtitle?: string;  // Ex: "Thiamine" sous "Vitamine B1"
+}
+
+// Template options for fallback when AI fails
+export type TableTemplate = '2-cols' | '3-cols' | '4-cols';
+
+export interface TableTemplateConfig {
+  id: TableTemplate;
+  label: string;
+  description: string;
+  columns: number;
+  defaultHeaders: string[];
+}

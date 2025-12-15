@@ -1,9 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
-// Note: Underline is included in StarterKit, no need to import separately
+import { Table } from '@tiptap/extension-table';
+import { TableRow } from '@tiptap/extension-table-row';
+import { TableCell } from '@tiptap/extension-table-cell';
+import { TableHeader } from '@tiptap/extension-table-header';
 import { 
   Bold, 
   Italic, 
@@ -14,8 +17,10 @@ import {
   AlignCenter,
   AlignJustify,
   Code,
-  Type
+  Type,
+  Table2
 } from './Icons';
+import TablePreviewModal from './TablePreviewModal';
 
 interface TipTapEditorProps {
   content: string;
@@ -24,6 +29,14 @@ interface TipTapEditorProps {
   toggleCodeMode: () => void;
   editable?: boolean;
   onEditorReady?: (editor: Editor) => void;
+}
+
+// Floating button state for list conversion
+interface FloatingButtonState {
+  visible: boolean;
+  x: number;
+  y: number;
+  listHtml: string;
 }
 
 // Toolbar Button Component
@@ -58,7 +71,9 @@ const EditorToolbar: React.FC<{
   editor: Editor | null; 
   isCodeMode: boolean;
   toggleCodeMode: () => void;
-}> = ({ editor, isCodeMode, toggleCodeMode }) => {
+  onConvertList: () => void;
+  hasListSelected: boolean;
+}> = ({ editor, isCodeMode, toggleCodeMode, onConvertList, hasListSelected }) => {
   if (!editor) return null;
 
   return (
@@ -75,7 +90,7 @@ const EditorToolbar: React.FC<{
         <ToolbarButton
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
-          title="Rétablir (Ctrl+Y)"
+          title="Retablir (Ctrl+Y)"
         >
           <Redo className="w-4 h-4" />
         </ToolbarButton>
@@ -102,7 +117,7 @@ const EditorToolbar: React.FC<{
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleUnderline().run()}
           isActive={editor.isActive('underline')}
-          title="Souligné (Ctrl+U)"
+          title="Souligne (Ctrl+U)"
         >
           <UnderlineIcon className="w-4 h-4" />
         </ToolbarButton>
@@ -115,7 +130,7 @@ const EditorToolbar: React.FC<{
         <ToolbarButton
           onClick={() => editor.chain().focus().setTextAlign('left').run()}
           isActive={editor.isActive({ textAlign: 'left' })}
-          title="Aligner à gauche"
+          title="Aligner a gauche"
         >
           <AlignLeft className="w-4 h-4" />
         </ToolbarButton>
@@ -134,6 +149,23 @@ const EditorToolbar: React.FC<{
           <AlignJustify className="w-4 h-4" />
         </ToolbarButton>
       </div>
+
+      <ToolbarDivider />
+
+      {/* Convert to Table Button - visible when cursor is in a list */}
+      <button
+        onClick={onConvertList}
+        disabled={!hasListSelected}
+        title="Convertir la liste en tableau"
+        className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-colors ${
+          hasListSelected
+            ? 'bg-brand-gold text-white hover:bg-brand-gold/90'
+            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+        }`}
+      >
+        <Table2 className="w-3.5 h-3.5" />
+        Tableau
+      </button>
 
       <div className="flex-1" />
 
@@ -162,6 +194,14 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
   editable = true,
   onEditorReady,
 }) => {
+  // Track if cursor is in a list
+  const [isInList, setIsInList] = useState(false);
+  const [currentListHtml, setCurrentListHtml] = useState('');
+
+  // Table preview modal state
+  const [showTableModal, setShowTableModal] = useState(false);
+  const [selectedListHtml, setSelectedListHtml] = useState('');
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -170,17 +210,39 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
         },
       }),
       Placeholder.configure({
-        placeholder: 'Commencez à écrire...',
+        placeholder: 'Commencez a ecrire...',
       }),
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
-      // Underline is already included in StarterKit
+      // Table extensions
+      Table.configure({
+        resizable: true,
+        allowTableNodeSelection: true,
+        HTMLAttributes: {
+          class: 'styled-table',
+        },
+      }),
+      TableRow,
+      TableCell.configure({
+        HTMLAttributes: {
+          class: 'table-cell',
+        },
+      }),
+      TableHeader.configure({
+        HTMLAttributes: {
+          class: 'table-header',
+        },
+      }),
     ],
     content,
     editable,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
+      checkIfInList(editor);
+    },
+    onSelectionUpdate: ({ editor }) => {
+      checkIfInList(editor);
     },
     editorProps: {
       attributes: {
@@ -188,6 +250,96 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
       },
     },
   });
+
+  // Check if cursor is inside a list
+  const checkIfInList = useCallback((editorInstance: Editor) => {
+    const isInBulletList = editorInstance.isActive('bulletList');
+    const isInOrderedList = editorInstance.isActive('orderedList');
+    const inList = isInBulletList || isInOrderedList;
+    
+    setIsInList(inList);
+
+    if (inList) {
+      // Get the list HTML from the DOM
+      const { view } = editorInstance;
+      const { from } = view.state.selection;
+      const domAtPos = view.domAtPos(from);
+      
+      if (domAtPos && domAtPos.node) {
+        let node: Node | null = domAtPos.node;
+        // Traverse up to find ul/ol
+        while (node && node.nodeName !== 'UL' && node.nodeName !== 'OL') {
+          node = node.parentNode;
+        }
+        if (node && (node.nodeName === 'UL' || node.nodeName === 'OL')) {
+          setCurrentListHtml((node as Element).outerHTML);
+        }
+      }
+    } else {
+      setCurrentListHtml('');
+    }
+  }, []);
+
+  // Initial check when editor is ready
+  useEffect(() => {
+    if (editor) {
+      checkIfInList(editor);
+    }
+  }, [editor, checkIfInList]);
+
+  // Handle convert to table button click
+  const handleConvertToTable = useCallback(() => {
+    if (!currentListHtml) return;
+    setSelectedListHtml(currentListHtml);
+    setShowTableModal(true);
+  }, [currentListHtml]);
+
+  // Handle table insertion
+  const handleTableAccept = useCallback((tableHtml: string) => {
+    if (!editor) return;
+
+    // Find and replace the list with the table
+    const { state } = editor;
+    const { doc } = state;
+    const { from } = state.selection;
+    
+    let listPos: number | null = null;
+    let listNodeSize: number = 0;
+
+    // Find the list containing the cursor
+    doc.descendants((node, pos) => {
+      if ((node.type.name === 'bulletList' || node.type.name === 'orderedList')) {
+        // Check if cursor is within this list
+        if (from >= pos && from <= pos + node.nodeSize) {
+          listPos = pos;
+          listNodeSize = node.nodeSize;
+          return false; // Stop traversal
+        }
+      }
+    });
+
+    if (listPos !== null) {
+      // Delete the list and insert the table HTML
+      editor
+        .chain()
+        .focus()
+        .deleteRange({ from: listPos, to: listPos + listNodeSize })
+        .insertContentAt(listPos, tableHtml)
+        .run();
+    } else {
+      // Fallback: insert at current position
+      editor
+        .chain()
+        .focus()
+        .insertContent(tableHtml)
+        .run();
+    }
+
+    setShowTableModal(false);
+    setSelectedListHtml('');
+    setIsInList(false);
+    setCurrentListHtml('');
+  }, [editor]);
 
   // Sync content when it changes externally
   useEffect(() => {
@@ -241,6 +393,8 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
         editor={editor} 
         isCodeMode={isCodeMode}
         toggleCodeMode={toggleCodeMode}
+        onConvertList={handleConvertToTable}
+        hasListSelected={isInList}
       />
       
       <div className="flex-1 overflow-y-auto">
@@ -251,8 +405,19 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
       </div>
 
       <div className="bg-amber-50 text-amber-800 text-xs p-2 text-center border-t border-amber-100">
-        Astuce: Utilisez la barre d'outils pour formater le texte. Ctrl+Z pour annuler.
+        {isInList 
+          ? "Liste detectee ! Cliquez sur le bouton 'Tableau' dans la barre d'outils pour convertir."
+          : "Astuce: Placez le curseur dans une liste pour la convertir en tableau."
+        }
       </div>
+
+      {/* Table Preview Modal */}
+      <TablePreviewModal
+        isOpen={showTableModal}
+        onClose={() => setShowTableModal(false)}
+        onAccept={handleTableAccept}
+        listHtml={selectedListHtml}
+      />
     </div>
   );
 };

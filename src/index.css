@@ -118,3 +118,138 @@
   font-style: italic;
   color: #2d4a3e;
 }
+
+/* ============================================
+   STYLED TABLE - Charte Oum Soumayya
+   Used for list-to-table conversion (WYSIWYG)
+   ============================================ */
+
+/* Base table styles */
+.styled-table,
+.rich-editor-content table.styled-table,
+.ProseMirror table.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-family: "Lora", serif;
+  font-size: 0.875rem;
+  border: 0.5px solid #C9A962;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* Table header */
+.styled-table thead,
+.rich-editor-content table.styled-table thead,
+.ProseMirror table.styled-table thead {
+  background-color: #9CAF88;
+}
+
+.styled-table th,
+.rich-editor-content table.styled-table th,
+.ProseMirror table.styled-table th {
+  color: #FDFBF7;
+  font-weight: 600;
+  padding: 10px 12px;
+  text-align: center;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 0.5px solid #C9A962;
+}
+
+/* Table body */
+.styled-table tbody tr:nth-child(odd),
+.rich-editor-content table.styled-table tbody tr:nth-child(odd),
+.ProseMirror table.styled-table tbody tr:nth-child(odd) {
+  background-color: #FDFBF7;
+}
+
+.styled-table tbody tr:nth-child(even),
+.rich-editor-content table.styled-table tbody tr:nth-child(even),
+.ProseMirror table.styled-table tbody tr:nth-child(even) {
+  background-color: #F5F0E8;
+}
+
+/* Table cells */
+.styled-table td,
+.rich-editor-content table.styled-table td,
+.ProseMirror table.styled-table td {
+  padding: 8px 12px;
+  border: 0.5px solid #C9A962;
+  vertical-align: top;
+  color: #1f2937;
+}
+
+/* First column styling (terms/titles) */
+.styled-table td:first-child,
+.rich-editor-content table.styled-table td:first-child,
+.ProseMirror table.styled-table td:first-child {
+  font-weight: 600;
+  color: #2D4A3E;
+}
+
+/* Cell content styling */
+.styled-table .cell-title,
+.rich-editor-content table.styled-table .cell-title {
+  font-weight: 600;
+  color: #2D4A3E;
+  display: block;
+}
+
+.styled-table .cell-subtitle,
+.rich-editor-content table.styled-table .cell-subtitle {
+  font-size: 0.7rem;
+  color: #6B7280;
+  font-style: normal;
+  display: block;
+  margin-top: 2px;
+}
+
+.styled-table .cell-content,
+.rich-editor-content table.styled-table .cell-content {
+  display: block;
+}
+
+/* Hover effect */
+.styled-table tbody tr:hover,
+.rich-editor-content table.styled-table tbody tr:hover,
+.ProseMirror table.styled-table tbody tr:hover {
+  background-color: #E8DFD0 !important;
+}
+
+/* Selected table in editor */
+.ProseMirror table.styled-table.selectedCell,
+.ProseMirror table.styled-table td.selectedCell,
+.ProseMirror table.styled-table th.selectedCell {
+  background-color: rgba(45, 74, 62, 0.1);
+  outline: 2px solid #2D4A3E;
+}
+
+/* Table resize handle */
+.ProseMirror .tableWrapper {
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: #C9A962;
+  cursor: col-resize;
+}
+
+/* Print styles for tables */
+@media print {
+  .styled-table,
+  .rich-editor-content table.styled-table {
+    page-break-inside: avoid;
+  }
+  
+  .styled-table tbody tr:hover {
+    background-color: inherit !important;
+  }
+}

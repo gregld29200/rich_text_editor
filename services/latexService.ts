@@ -57,6 +57,97 @@ const isRealHeading = (text: string, className: string): boolean => {
   return false;
 };
 
+// ============================================
+// TABLE TO LATEX CONVERSION
+// Styled tables matching the Oum Soumayya brand
+// ============================================
+
+const tableToLatex = (tableEl: HTMLTableElement): string => {
+  const rows = tableEl.querySelectorAll('tr');
+  if (rows.length === 0) return '';
+
+  // Detect number of columns from first row
+  const firstRow = rows[0];
+  const headerCells = firstRow.querySelectorAll('th, td');
+  const numCols = headerCells.length;
+  
+  if (numCols === 0) return '';
+
+  // Build column specification for tabularx
+  // First column fixed width, rest are X (flexible)
+  let colSpec = '|>{\\bfseries\\color{deepgreen}\\small}p{2.8cm}|';
+  for (let i = 1; i < numCols; i++) {
+    if (i === numCols - 1) {
+      // Last column italic for sources
+      colSpec += '>{\\itshape\\color{black}\\small}X|';
+    } else {
+      colSpec += '>{\\small}X|';
+    }
+  }
+
+  let latex = `
+% Styled Table
+\\arrayrulecolor{brandgold}
+\\setlength{\\arrayrulewidth}{0.5pt}
+\\renewcommand{\\arraystretch}{1.35}
+\\rowcolors{2}{blanccasse}{beigelin}
+
+\\begin{tabularx}{\\textwidth}{${colSpec}}
+\\hline
+`;
+
+  // Process header row
+  const hasHeader = firstRow.querySelector('th') !== null;
+  let startRowIndex = 0;
+
+  if (hasHeader) {
+    const headerTexts: string[] = [];
+    headerCells.forEach(cell => {
+      const text = (cell.textContent || '').trim();
+      headerTexts.push(`\\textcolor{blanccasse}{\\textbf{\\small ${escapeLatex(text)}}}`);
+    });
+    
+    latex += `\\rowcolor{vertsauge}\n`;
+    latex += headerTexts.map(h => `\\multicolumn{1}{|c|}{${h}}`).join(' & ');
+    latex += ' \\\\\n\\hline\n';
+    startRowIndex = 1;
+  }
+
+  // Process data rows
+  for (let i = startRowIndex; i < rows.length; i++) {
+    const row = rows[i];
+    const cells = row.querySelectorAll('td, th');
+    const cellTexts: string[] = [];
+
+    cells.forEach((cell, cellIndex) => {
+      // Check for subtitle structure
+      const titleSpan = cell.querySelector('.cell-title');
+      const subtitleSpan = cell.querySelector('.cell-subtitle');
+      
+      let cellContent = '';
+      
+      if (titleSpan && subtitleSpan) {
+        const title = (titleSpan.textContent || '').trim();
+        const subtitle = (subtitleSpan.textContent || '').trim();
+        cellContent = `${escapeLatex(title)} \\newline {\\normalfont\\scriptsize\\color{gray} ${escapeLatex(subtitle)}}`;
+      } else {
+        cellContent = escapeLatex((cell.textContent || '').trim());
+      }
+      
+      cellTexts.push(cellContent);
+    });
+
+    latex += cellTexts.join(' & ') + ' \\\\\n\\hline\n';
+  }
+
+  latex += `\\end{tabularx}
+
+\\vspace{0.5cm}
+`;
+
+  return latex;
+};
+
 // Convert HTML content to LaTeX
 const htmlToLatex = (html: string): string => {
   const container = document.createElement('div');
@@ -130,6 +221,10 @@ const htmlToLatex = (html: string): string => {
         
       case 'blockquote':
         return `\\begin{goldquote}\n${escapeLatex(rawText)}\n\\end{goldquote}\n\n`;
+      
+      case 'table':
+        // Convert styled tables to LaTeX tabularx
+        return tableToLatex(el as HTMLTableElement);
         
       case 'div':
       case 'section':
@@ -236,8 +331,13 @@ const getLatexTemplate = (title: string, author: string, content: string): strin
 % COLORS
 % ============================================
 \\usepackage{xcolor}
+\\usepackage{colortbl}
+\\usepackage{tabularx}
 \\definecolor{deepgreen}{HTML}{2D4A3E}
 \\definecolor{brandgold}{HTML}{C9A962}
+\\definecolor{vertsauge}{HTML}{9CAF88}
+\\definecolor{beigelin}{HTML}{F5F0E8}
+\\definecolor{blanccasse}{HTML}{FDFBF7}
 
 % ============================================
 % CHAPTER & SECTION STYLING

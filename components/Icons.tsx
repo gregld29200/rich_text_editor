@@ -57,7 +57,9 @@ import {
   Send,
   Bot,
   Pencil,
-  Check
+  Check,
+  Table2,
+  RefreshCw
 } from 'lucide-react';
 
 export { 
@@ -118,5 +120,7 @@ export {
   Send,
   Bot,
   Pencil,
-  Check
+  Check,
+  Table2,
+  RefreshCw
 };
