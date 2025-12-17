@@ -333,6 +333,36 @@ Fallback templates:
 
 ---
 
+### 6. Deployment Fixes (Dec 17, 2025)
+
+**Problem 1:** Cloudflare Pages deployment failed with `npm ci` error - `package-lock.json` out of sync with `@floating-ui/dom@1.7.4`.
+
+**Solution:** Regenerated `package-lock.json` with clean `npm install`.
+
+**Problem 2:** Missing Underline extension in TipTapEditor causing runtime errors.
+
+**Solution:** Added missing import and extension registration:
+```typescript
+import Underline from '@tiptap/extension-underline';
+// ... in extensions array:
+Underline,
+```
+
+**Problem 3:** "Tableau" button not appearing after deployment - Cloudflare serving stale build.
+
+**Root Cause:** Cloudflare Pages GitHub integration was serving an old cached build (`index-gOL6X4VY.js`) that predated the Tableau feature.
+
+**Solution:** Manual deployment using `wrangler pages deploy dist` to force upload of correct build.
+
+**Key Learning:** Always use manual deploy command for immediate updates:
+```bash
+npm run build && CLOUDFLARE_ACCOUNT_ID=b12c5eabd8c77ca8249e65de678ab3f2 npx wrangler pages deploy dist --project-name=sante-dans-assiette-editor --commit-dirty=true
+```
+
+GitHub-triggered builds may use cached artifacts or fail silently.
+
+---
+
 ## Future Considerations
 
 1. **PDF via Overleaf** requires user to click "Recompile" - could explore server-side compilation for one-click PDF
@@ -340,3 +370,4 @@ Fallback templates:
 3. **DOCX Export** still has the heuristic heading detection but wasn't fully tested this session
 4. **Table Editing** - could add in-place table editing (add/remove rows/columns)
 5. **Table Templates** - could add more predefined table styles/themes
+6. **Cloudflare Deployment** - Consider disabling GitHub integration to avoid stale builds, or configure cache purging
