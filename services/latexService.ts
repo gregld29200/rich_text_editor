@@ -1,4 +1,4 @@
-import { BookStructure } from '../types';
+import { BookStructure, FrontMatter } from '../types';
 import { saveAs } from 'file-saver';
 
 // ============================================
@@ -8,6 +8,7 @@ import { saveAs } from 'file-saver';
 interface LatexExportOptions {
   title: string;
   author: string;
+  frontMatter?: FrontMatter;
 }
 
 // Special LaTeX character escaping
@@ -302,7 +303,78 @@ const htmlToLatex = (html: string): string => {
 };
 
 // LaTeX document template
-const getLatexTemplate = (title: string, author: string, content: string): string => {
+const getLatexTemplate = (title: string, author: string, content: string, frontMatter?: FrontMatter): string => {
+  // Generate front matter content
+  let frontMatterLatex = '';
+  
+  if (frontMatter) {
+    // Mise en garde (Disclaimer) - before title page
+    if (frontMatter.disclaimer && frontMatter.disclaimer.trim()) {
+      frontMatterLatex += `
+% --------------------------------------------
+% MISE EN GARDE (DISCLAIMER)
+% --------------------------------------------
+\\thispagestyle{empty}
+\\vspace*{2in}
+\\begin{center}
+{\\Large\\bfseries\\color{deepgreen} Mise en garde\\par}
+\\vspace{0.3in}
+{\\color{brandgold}\\rule{1.5in}{1pt}\\par}
+\\vspace{0.3in}
+\\end{center}
+
+\\begin{quote}
+\\itshape
+${htmlToLatex(frontMatter.disclaimer)}
+\\end{quote}
+
+\\newpage
+`;
+    }
+    
+    // Custom Title Page (if has more info than default)
+    if (frontMatter.titlePage) {
+      const tp = frontMatter.titlePage;
+      frontMatterLatex += `
+% --------------------------------------------
+% TITLE PAGE (FROM FRONT MATTER)
+% --------------------------------------------
+\\begin{titlepage}
+\\centering
+\\vspace*{2in}
+{\\Huge\\bfseries\\color{deepgreen} ${escapeLatex(tp.title || title)} \\par}
+${tp.subtitle1 ? `\\vspace{0.3in}\n{\\Large\\itshape ${escapeLatex(tp.subtitle1)} \\par}` : ''}
+${tp.subtitle2 ? `\\vspace{0.15in}\n{\\Large\\itshape ${escapeLatex(tp.subtitle2)} \\par}` : ''}
+\\vspace{0.5in}
+{\\color{brandgold}\\rule{2in}{2pt}\\par}
+\\vspace{0.5in}
+{\\Large\\bfseries ${escapeLatex(tp.author || author)} \\par}
+${tp.credentials ? `\\vspace{0.2in}\n{\\small\\itshape ${escapeLatex(tp.credentials)} \\par}` : ''}
+${tp.contact ? `\\vspace{0.3in}\n{\\small\\color{brandgold} ${escapeLatex(tp.contact)} \\par}` : ''}
+\\vfill
+\\end{titlepage}
+
+`;
+    }
+  }
+  
+  // Use default title page only if no front matter title page
+  const defaultTitlePage = !frontMatter?.titlePage ? `
+% --------------------------------------------
+% COVER PAGE
+% --------------------------------------------
+\\begin{titlepage}
+\\centering
+\\vspace*{2.5in}
+{\\Huge\\bfseries\\color{deepgreen} ${escapeLatex(title)} \\par}
+\\vspace{0.5in}
+{\\color{brandgold}\\rule{2in}{2pt}\\par}
+\\vspace{0.5in}
+{\\Large\\itshape ${escapeLatex(author)} \\par}
+\\vfill
+\\end{titlepage}
+` : '';
+
   return `\\documentclass[11pt, oneside]{book}
 
 % ============================================
@@ -430,19 +502,7 @@ const getLatexTemplate = (title: string, author: string, content: string): strin
 % ============================================
 \\begin{document}
 
-% --------------------------------------------
-% COVER PAGE
-% --------------------------------------------
-\\begin{titlepage}
-\\centering
-\\vspace*{2.5in}
-{\\Huge\\bfseries\\color{deepgreen} ${escapeLatex(title)} \\par}
-\\vspace{0.5in}
-{\\color{brandgold}\\rule{2in}{2pt}\\par}
-\\vspace{0.5in}
-{\\Large\\itshape ${escapeLatex(author)} \\par}
-\\vfill
-\\end{titlepage}
+${frontMatterLatex || defaultTitlePage}
 
 % --------------------------------------------
 % TABLE OF CONTENTS
@@ -483,7 +543,7 @@ export const generateLatexDocument = (
     }
   }
   
-  return getLatexTemplate(options.title, options.author, chaptersContent);
+  return getLatexTemplate(options.title, options.author, chaptersContent, options.frontMatter);
 };
 
 // Open document in Overleaf using form POST (handles large documents)

@@ -33,9 +33,30 @@ export interface BookPart {
   description?: string; // Optional part description
 }
 
+// ============================================
+// Front Matter Types (Disclaimer + Title Page)
+// ============================================
+
+export interface TitlePageData {
+  title: string;           // "La Santé dans l'assiette"
+  subtitle1: string;       // "30 Jours pour se soigner"
+  subtitle2: string;       // "Ramadan, ma guérison"
+  author: string;          // "Oum Soumayya"
+  credentials: string;     // "Praticienne en Hijama - Naturopathie..."
+  contact: string;         // "monremede@gmail.com"
+}
+
+export interface FrontMatter {
+  disclaimer: string;      // Mise en garde - HTML content (TipTap)
+  titlePage: TitlePageData; // Page de titre - form fields
+}
+
+export type FrontMatterSection = 'disclaimer' | 'titlePage';
+
 export interface BookStructure {
   parts: BookPart[];
   metadata?: BookMetadata;
+  frontMatter?: FrontMatter;
 }
 
 export interface BookMetadata {

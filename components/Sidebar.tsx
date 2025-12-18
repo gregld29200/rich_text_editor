@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { BookStructure, SectionStatus } from '../types';
-import { ChevronRight, ChevronDown, FileText, CheckCircle, Clock, BookOpen, Plus, Trash2, GripVertical, Check, X } from './Icons';
+import { BookStructure, SectionStatus, FrontMatterSection } from '../types';
+import { ChevronRight, ChevronDown, FileText, CheckCircle, Clock, BookOpen, Plus, Trash2, GripVertical, Check, X, ClipboardList, BookCopy } from './Icons';
 import {
   DndContext,
   closestCenter,
@@ -22,7 +22,9 @@ import { CSS } from '@dnd-kit/utilities';
 interface SidebarProps {
   structure: BookStructure;
   currentSectionId: string | null;
+  currentFrontMatterSection: FrontMatterSection | null;
   onSelectSection: (id: string) => void;
+  onSelectFrontMatter: (section: FrontMatterSection) => void;
   onAddChapter: () => void;
   onClearAll: () => void;
   onReorderChapter?: (partId: string, oldIndex: number, newIndex: number) => void;
@@ -167,7 +169,9 @@ const SortableChapter: React.FC<SortableChapterProps> = ({
 const Sidebar: React.FC<SidebarProps> = ({
   structure,
   currentSectionId,
+  currentFrontMatterSection,
   onSelectSection,
+  onSelectFrontMatter,
   onAddChapter,
   onClearAll,
   onReorderChapter,
@@ -177,6 +181,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     'p1': true,
     'p2': true
   });
+  const [frontMatterExpanded, setFrontMatterExpanded] = useState(true);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -228,6 +233,51 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Front Matter Section */}
+        <div className="select-none">
+          <button
+            onClick={() => setFrontMatterExpanded(!frontMatterExpanded)}
+            className="flex items-center gap-2 w-full text-left p-2 hover:bg-brand-gold/10 rounded text-brand-gold font-semibold"
+          >
+            {frontMatterExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            <span className="truncate">Pages liminaires</span>
+          </button>
+
+          {frontMatterExpanded && (
+            <div className="ml-4 mt-1 space-y-1 border-l border-brand-gold/30 pl-2">
+              {/* Mise en garde (Disclaimer) */}
+              <button
+                onClick={() => onSelectFrontMatter('disclaimer')}
+                className={`w-full flex items-center gap-2 text-left p-2 rounded text-sm transition-colors ${
+                  currentFrontMatterSection === 'disclaimer'
+                    ? 'bg-brand-gold text-white shadow-sm'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-brand-gold'
+                }`}
+              >
+                <ClipboardList className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate font-body">Mise en garde</span>
+              </button>
+
+              {/* Page de titre (Title Page) */}
+              <button
+                onClick={() => onSelectFrontMatter('titlePage')}
+                className={`w-full flex items-center gap-2 text-left p-2 rounded text-sm transition-colors ${
+                  currentFrontMatterSection === 'titlePage'
+                    ? 'bg-brand-gold text-white shadow-sm'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-brand-gold'
+                }`}
+              >
+                <BookCopy className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate font-body">Page de titre</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Separator */}
+        <div className="border-t border-gray-200"></div>
+
+        {/* Book Parts */}
         {structure.parts.map((part) => (
           <div key={part.id} className="select-none">
             <button

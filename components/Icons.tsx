@@ -59,7 +59,9 @@ import {
   Pencil,
   Check,
   Table2,
-  RefreshCw
+  RefreshCw,
+  ClipboardList,
+  BookCopy
 } from 'lucide-react';
 
 export { 
@@ -122,5 +124,7 @@ export {
   Pencil,
   Check,
   Table2,
-  RefreshCw
+  RefreshCw,
+  ClipboardList,
+  BookCopy
 };

@@ -6,7 +6,8 @@ import BookPreview from './components/BookPreview';
 import EditorPanel from './components/EditorPanel';
 import SettingsModal from './components/SettingsModal';
 import FeedbackModal from './components/FeedbackModal';
-import { BookStructure, BookSection, SectionStatus, BookVersion, ViewMode } from './types';
+import TitlePageEditor from './components/TitlePageEditor';
+import { BookStructure, BookSection, SectionStatus, BookVersion, ViewMode, FrontMatter, FrontMatterSection, TitlePageData } from './types';
 import IMPORTED_BOOK_DATA from './data/bookContent';
 import { Download, Printer, Settings, FileUp, Volume2, Square, Loader2, HelpCircle, RotateCcw, ChevronDown, FileText, FileDown, Save, MessageSquareText, Trash2, Undo, X } from './components/Icons';
 import WelcomeGuide, { useWelcomeGuide } from './components/WelcomeGuide';
@@ -17,7 +18,9 @@ import {
   loadSectionContent, 
   saveSectionContent,
   addHistoryEntry,
-  loadSectionHistory
+  loadSectionHistory,
+  saveFrontMatter,
+  loadFrontMatter
 } from './services/firebaseService';
 import { generateChapterAudio } from './services/geminiService';
 import { getApiKey } from './utils/apiKeyManager';
@@ -54,6 +57,20 @@ function App() {
 
   // AI Feedback Modal
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+
+  // Front Matter State
+  const [currentFrontMatterSection, setCurrentFrontMatterSection] = useState<FrontMatterSection | null>(null);
+  const [frontMatter, setFrontMatter] = useState<FrontMatter>({
+    disclaimer: '<p>Ce livre est destine a apporter un soutien, pour vous aider a comprendre ce que vous pouvez faire au mieux en terme de sante pour ameliorer votre bien-etre.</p><p>Il ne remplace en rien le diagnostic d\'un professionnel de la sante.</p><p>Veuillez consulter un praticien si les troubles persistent au bout des 3 jours de reforme alimentaire.</p>',
+    titlePage: {
+      title: 'La Sante dans l\'assiette',
+      subtitle1: '30 Jours pour se soigner',
+      subtitle2: 'Ramadan, ma guerison',
+      author: 'Oum Soumayya',
+      credentials: 'Praticienne en Hijama - Naturopathie - Acupuncture - Reflexologie - Massotherapie - Micronutrition - Therapie par la chaleur',
+      contact: 'monremede@gmail.com'
+    }
+  });
 
   // Deleted Chapter Undo State
   const [deletedChapter, setDeletedChapter] = useState<{
@@ -337,7 +354,8 @@ function App() {
       setExportProgress(60);
       const texContent = generateLatexDocument(fullBookData, {
         title: BOOK_TITLE,
-        author: BOOK_AUTHOR
+        author: BOOK_AUTHOR,
+        frontMatter: frontMatter
       });
       
       setExportProgress(90);
@@ -644,6 +662,42 @@ function App() {
     }
   };
 
+  // --- Front Matter Handlers ---
+  const handleSelectFrontMatter = (section: FrontMatterSection) => {
+    // Deselect any chapter when selecting front matter
+    setCurrentSectionId(null);
+    setCurrentFrontMatterSection(section);
+  };
+
+  const handleSelectSection = (id: string) => {
+    // Deselect front matter when selecting a chapter
+    setCurrentFrontMatterSection(null);
+    setCurrentSectionId(id);
+  };
+
+  const handleUpdateFrontMatter = async (newFrontMatter: FrontMatter) => {
+    setFrontMatter(newFrontMatter);
+    
+    if (firebaseActive) {
+      try {
+        await saveFrontMatter(newFrontMatter);
+        console.log("Front matter saved");
+      } catch (e) {
+        console.error("Failed to save front matter", e);
+      }
+    }
+  };
+
+  const handleUpdateDisclaimer = async (content: string) => {
+    const newFrontMatter = { ...frontMatter, disclaimer: content };
+    await handleUpdateFrontMatter(newFrontMatter);
+  };
+
+  const handleUpdateTitlePage = async (titlePage: TitlePageData) => {
+    const newFrontMatter = { ...frontMatter, titlePage };
+    await handleUpdateFrontMatter(newFrontMatter);
+  };
+
   // --- Rename Chapter Feature ---
   const handleRenameChapter = async (chapterId: string, newTitle: string) => {
     const newBookData: BookStructure = {
@@ -789,6 +843,12 @@ function App() {
       setFirebaseActive(true);
       
       const remoteStructure = await loadBookStructure();
+      
+      // Load front matter
+      const remoteFrontMatter = await loadFrontMatter();
+      if (remoteFrontMatter) {
+        setFrontMatter(remoteFrontMatter);
+      }
       
       if (remoteStructure) {
         // Load from Firebase - Firebase is the source of truth
@@ -946,7 +1006,9 @@ function App() {
       <Sidebar
         structure={bookData}
         currentSectionId={currentSectionId}
-        onSelectSection={setCurrentSectionId}
+        currentFrontMatterSection={currentFrontMatterSection}
+        onSelectSection={handleSelectSection}
+        onSelectFrontMatter={handleSelectFrontMatter}
         onAddChapter={handleAddChapter}
         onClearAll={handleClearAll}
         onReorderChapter={handleReorderChapter}
@@ -1161,8 +1223,45 @@ function App() {
 
         {/* Content Area */}
         <div className="flex-1 flex overflow-hidden">
-            <BookPreview section={getCurrentSection()} theme={viewMode === 'WEB' ? 'web' : 'print'} />
-            <EditorPanel section={getCurrentSection()} onUpdate={handleUpdateSection} />
+          {currentFrontMatterSection === 'titlePage' ? (
+            // Title Page Form Editor
+            <div className="flex-1 overflow-hidden">
+              <TitlePageEditor 
+                data={frontMatter.titlePage}
+                onChange={handleUpdateTitlePage}
+              />
+            </div>
+          ) : currentFrontMatterSection === 'disclaimer' ? (
+            // Disclaimer Editor - Uses TipTap via EditorPanel with a fake section
+            <>
+              <BookPreview 
+                section={{
+                  id: 'disclaimer',
+                  title: 'Mise en garde',
+                  content: frontMatter.disclaimer,
+                  status: SectionStatus.VALIDATED,
+                  history: []
+                }} 
+                theme={viewMode === 'WEB' ? 'web' : 'print'} 
+              />
+              <EditorPanel 
+                section={{
+                  id: 'disclaimer',
+                  title: 'Mise en garde',
+                  content: frontMatter.disclaimer,
+                  status: SectionStatus.VALIDATED,
+                  history: []
+                }} 
+                onUpdate={(_id, content) => handleUpdateDisclaimer(content)} 
+              />
+            </>
+          ) : (
+            // Regular Chapter Editor
+            <>
+              <BookPreview section={getCurrentSection()} theme={viewMode === 'WEB' ? 'web' : 'print'} />
+              <EditorPanel section={getCurrentSection()} onUpdate={handleUpdateSection} />
+            </>
+          )}
         </div>
       </div>
 

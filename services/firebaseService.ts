@@ -12,7 +12,7 @@ import {
   Firestore,
   addDoc
 } from 'firebase/firestore';
-import { BookStructure, BookSection, BookVersion, SectionStatus } from '../types';
+import { BookStructure, BookSection, BookVersion, SectionStatus, FrontMatter } from '../types';
 
 let app: FirebaseApp | undefined;
 let db: Firestore | undefined;
@@ -120,4 +120,33 @@ export const loadSectionHistory = async (sectionId: string): Promise<BookVersion
   const snap = await getDocs(q);
   
   return snap.docs.map(d => d.data() as BookVersion);
+};
+
+// 4. FRONT MATTER (Disclaimer + Title Page)
+export const saveFrontMatter = async (frontMatter: FrontMatter) => {
+  if (!db) return;
+  const frontMatterRef = doc(db, 'books', BOOK_ID, 'frontMatter', 'data');
+  await setDoc(frontMatterRef, { ...frontMatter, lastUpdated: Date.now() }, { merge: true });
+};
+
+export const loadFrontMatter = async (): Promise<FrontMatter | null> => {
+  if (!db) return null;
+  const frontMatterRef = doc(db, 'books', BOOK_ID, 'frontMatter', 'data');
+  const snap = await getDoc(frontMatterRef);
+  
+  if (snap.exists()) {
+    const data = snap.data();
+    return {
+      disclaimer: data.disclaimer || '',
+      titlePage: data.titlePage || {
+        title: '',
+        subtitle1: '',
+        subtitle2: '',
+        author: '',
+        credentials: '',
+        contact: ''
+      }
+    };
+  }
+  return null;
 };
