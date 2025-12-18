@@ -51,7 +51,7 @@ export interface FrontMatter {
   titlePage: TitlePageData; // Page de titre - form fields
 }
 
-export type FrontMatterSection = 'disclaimer' | 'titlePage';
+export type FrontMatterSection = 'disclaimer' | 'titlePage' | 'tableOfContents';
 
 export interface BookStructure {
   parts: BookPart[];

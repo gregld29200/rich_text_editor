@@ -7,6 +7,7 @@ import EditorPanel from './components/EditorPanel';
 import SettingsModal from './components/SettingsModal';
 import FeedbackModal from './components/FeedbackModal';
 import TitlePageEditor from './components/TitlePageEditor';
+import TableOfContents from './components/TableOfContents';
 import { BookStructure, BookSection, SectionStatus, BookVersion, ViewMode, FrontMatter, FrontMatterSection, TitlePageData } from './types';
 import IMPORTED_BOOK_DATA from './data/bookContent';
 import { Download, Printer, Settings, FileUp, Volume2, Square, Loader2, HelpCircle, RotateCcw, ChevronDown, FileText, FileDown, Save, MessageSquareText, Trash2, Undo, X } from './components/Icons';
@@ -554,33 +555,6 @@ function App() {
     }
   }
 
-  // --- Clear All Feature ---
-  const handleClearAll = async () => {
-    if (!confirm("Supprimer tous les chapitres ? Cette action est irréversible.")) return;
-    
-    const emptyStructure: BookStructure = {
-      parts: [{
-        id: 'p1',
-        title: 'Mon Livre',
-        chapters: []
-      }]
-    };
-    
-    setBookData(emptyStructure);
-    setCurrentSectionId(null);
-    
-    if (firebaseActive) {
-      try {
-        await saveBookStructure(emptyStructure);
-        console.log("Firebase cleared successfully");
-        alert("Tous les chapitres ont ete supprimes.");
-      } catch (e) {
-        console.error("Failed to clear Firebase", e);
-        alert("Erreur lors de la suppression. Veuillez reessayer.");
-      }
-    }
-  };
-
   // --- Add Chapter Feature ---
   const handleAddChapter = async () => {
     const chapterTitle = prompt("Titre du nouveau chapitre :", "Nouveau chapitre");
@@ -1010,7 +984,6 @@ function App() {
         onSelectSection={handleSelectSection}
         onSelectFrontMatter={handleSelectFrontMatter}
         onAddChapter={handleAddChapter}
-        onClearAll={handleClearAll}
         onReorderChapter={handleReorderChapter}
         onRenameChapter={handleRenameChapter}
       />
@@ -1255,6 +1228,14 @@ function App() {
                 onUpdate={(_id, content) => handleUpdateDisclaimer(content)} 
               />
             </>
+          ) : currentFrontMatterSection === 'tableOfContents' ? (
+            // Dynamic Table of Contents
+            <div className="flex-1 overflow-hidden">
+              <TableOfContents 
+                structure={bookData}
+                onNavigateToChapter={handleSelectSection}
+              />
+            </div>
           ) : (
             // Regular Chapter Editor
             <>

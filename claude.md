@@ -261,20 +261,24 @@ Created `components/TablePreviewModal.tsx`:
 | `services/tableService.ts` | AI-powered list to table conversion |
 | `components/FeedbackModal.tsx` | Chat-style AI assistant modal UI |
 | `components/TablePreviewModal.tsx` | Table preview with accept/cancel |
+| `components/TitlePageEditor.tsx` | Form-based title page editor |
+| `components/TableOfContents.tsx` | Dynamic auto-updating TOC |
 | `docs/plans/2024-12-15-list-to-table-design.md` | Design document for table feature |
 
 ### Files Modified
 
 | File | Changes |
 |------|---------|
-| `App.tsx` | Export handlers, LaTeX integration, AI feedback modal |
+| `App.tsx` | Export handlers, LaTeX integration, AI feedback modal, front matter state |
 | `components/TipTapEditor.tsx` | Table extensions, toolbar button, list detection |
-| `components/Icons.tsx` | New icons (MessageSquareText, Send, Bot, Table2, RefreshCw) |
+| `components/Sidebar.tsx` | Added front matter section with gold styling |
+| `components/Icons.tsx` | New icons (MessageSquareText, Send, Bot, Table2, RefreshCw, ClipboardList, BookCopy, ListTree) |
 | `services/pdfService.ts` | Multiple attempts at fixing (kept but replaced by LaTeX) |
-| `services/latexService.ts` | Added tableToLatex(), table colors, tabularx support |
+| `services/latexService.ts` | Added tableToLatex(), table colors, tabularx support, front matter export |
+| `services/firebaseService.ts` | Added saveFrontMatter(), loadFrontMatter() |
 | `services/exportService.ts` | DOCX export heuristic heading detection |
 | `src/index.css` | Added .styled-table CSS for WYSIWYG tables |
-| `types.ts` | Added TableData, TableRow, TableCell types |
+| `types.ts` | Added TableData, TableRow, TableCell, FrontMatter, TitlePageData types |
 | `package.json` | Added TipTap table extension dependencies |
 
 ---
@@ -363,6 +367,60 @@ GitHub-triggered builds may use cached artifacts or fail silently.
 
 ---
 
+### 7. Front Matter System (Dec 18, 2025)
+
+**Feature:** Dedicated front matter section for book preliminaries (Mise en garde, Page de titre, Table des matieres).
+
+**Implementation:**
+
+**New Types** (`types.ts`):
+- `TitlePageData` - Form fields for title page (title, subtitle1, subtitle2, author, credentials, contact)
+- `FrontMatter` - Container for disclaimer HTML and titlePage data
+- `FrontMatterSection` - Union type: `'disclaimer' | 'titlePage' | 'tableOfContents'`
+
+**Firebase Integration** (`services/firebaseService.ts`):
+- `saveFrontMatter()` - Saves front matter to Firebase subcollection
+- `loadFrontMatter()` - Loads front matter on app init
+
+**New Components:**
+- `components/TitlePageEditor.tsx` - Form-based editor with 6 labeled fields + live preview card
+- `components/TableOfContents.tsx` - Dynamic TOC that auto-updates when chapters change
+
+**Sidebar Enhancement** (`components/Sidebar.tsx`):
+- Added collapsible "Pages liminaires" section at top (gold accent color)
+- Three items: Mise en garde, Page de titre, Table des matieres
+- Uses `ClipboardList`, `BookCopy`, `ListTree` icons
+
+**LaTeX Export** (`services/latexService.ts`):
+- Disclaimer renders before title page with decorative styling
+- Title page uses all form fields (subtitles, credentials, contact)
+- Both appear before `\tableofcontents`
+
+**UI Location:**
+```
+▼ Pages liminaires (gold)
+   📋 Mise en garde      → TipTap rich text editor
+   📕 Page de titre      → Form with 6 fields + preview
+   🌳 Table des matieres → Dynamic clickable TOC
+─────────────────────────
+▼ PARTIE 1: Mon Livre (green)
+   ...chapters...
+```
+
+**Files Created:**
+- `components/TitlePageEditor.tsx`
+- `components/TableOfContents.tsx`
+
+**Files Modified:**
+- `types.ts` - Added FrontMatter types
+- `services/firebaseService.ts` - Added front matter save/load
+- `services/latexService.ts` - Added front matter to LaTeX export
+- `components/Sidebar.tsx` - Added front matter section
+- `components/Icons.tsx` - Added ClipboardList, BookCopy, ListTree icons
+- `App.tsx` - Added front matter state, handlers, conditional rendering
+
+---
+
 ## Future Considerations
 
 1. **PDF via Overleaf** requires user to click "Recompile" - could explore server-side compilation for one-click PDF
@@ -371,3 +429,4 @@ GitHub-triggered builds may use cached artifacts or fail silently.
 4. **Table Editing** - could add in-place table editing (add/remove rows/columns)
 5. **Table Templates** - could add more predefined table styles/themes
 6. **Cloudflare Deployment** - Consider disabling GitHub integration to avoid stale builds, or configure cache purging
+7. **Front Matter DOCX/HTML Export** - Currently only exports to LaTeX; could extend to other formats

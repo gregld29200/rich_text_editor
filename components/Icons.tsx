@@ -61,7 +61,8 @@ import {
   Table2,
   RefreshCw,
   ClipboardList,
-  BookCopy
+  BookCopy,
+  ListTree
 } from 'lucide-react';
 
 export { 
@@ -126,5 +127,6 @@ export {
   Table2,
   RefreshCw,
   ClipboardList,
-  BookCopy
+  BookCopy,
+  ListTree
 };

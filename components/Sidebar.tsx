@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { BookStructure, SectionStatus, FrontMatterSection } from '../types';
-import { ChevronRight, ChevronDown, FileText, CheckCircle, Clock, BookOpen, Plus, Trash2, GripVertical, Check, X, ClipboardList, BookCopy } from './Icons';
+import { ChevronRight, ChevronDown, FileText, CheckCircle, Clock, BookOpen, Plus, GripVertical, Check, X, ClipboardList, BookCopy, ListTree } from './Icons';
 import {
   DndContext,
   closestCenter,
@@ -26,7 +26,6 @@ interface SidebarProps {
   onSelectSection: (id: string) => void;
   onSelectFrontMatter: (section: FrontMatterSection) => void;
   onAddChapter: () => void;
-  onClearAll: () => void;
   onReorderChapter?: (partId: string, oldIndex: number, newIndex: number) => void;
   onRenameChapter?: (chapterId: string, newTitle: string) => void;
 }
@@ -173,7 +172,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   onSelectSection,
   onSelectFrontMatter,
   onAddChapter,
-  onClearAll,
   onReorderChapter,
   onRenameChapter
 }) => {
@@ -270,6 +268,19 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <BookCopy className="w-3 h-3 flex-shrink-0" />
                 <span className="truncate font-body">Page de titre</span>
               </button>
+
+              {/* Table des matieres (Table of Contents) */}
+              <button
+                onClick={() => onSelectFrontMatter('tableOfContents')}
+                className={`w-full flex items-center gap-2 text-left p-2 rounded text-sm transition-colors ${
+                  currentFrontMatterSection === 'tableOfContents'
+                    ? 'bg-brand-gold text-white shadow-sm'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-brand-gold'
+                }`}
+              >
+                <ListTree className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate font-body">Table des matieres</span>
+              </button>
             </div>
           )}
         </div>
@@ -318,20 +329,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="p-3 border-t border-gray-200 bg-gray-50 space-y-2">
+      <div className="p-3 border-t border-gray-200 bg-gray-50">
         <button
           onClick={onAddChapter}
           className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-brand-green text-white rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
         >
           <Plus className="w-4 h-4" />
           Ajouter un chapitre
-        </button>
-        <button
-          onClick={onClearAll}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm"
-        >
-          <Trash2 className="w-4 h-4" />
-          Tout supprimer
         </button>
       </div>
 
