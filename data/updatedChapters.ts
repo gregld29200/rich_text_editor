@@ -395,7 +395,7 @@ export const UPDATED_PARTS: BookPart[] = [
   },
   {
     id: 'p2',
-    title: "Partie I : Le Jeûne & le Corps",
+    title: "Le Jeûne & le Corps",
     chapters: [
       createChapter('livre-phase2-complete-2-ch0', UPDATED_CHAPTERS['livre-phase2-complete-2-ch0'].title, UPDATED_CHAPTERS['livre-phase2-complete-2-ch0'].content),
       createChapter('livre-phase2-complete-2-ch1', UPDATED_CHAPTERS['livre-phase2-complete-2-ch1'].title, UPDATED_CHAPTERS['livre-phase2-complete-2-ch1'].content),
@@ -415,7 +415,7 @@ export const UPDATED_PARTS: BookPart[] = [
   },
   {
     id: 'p3',
-    title: "Partie II : Nutrition & Pathologies",
+    title: "Nutrition & Pathologies",
     chapters: [
       createChapter('livre-phase3-1-ch0', UPDATED_CHAPTERS['livre-phase3-1-ch0'].title, UPDATED_CHAPTERS['livre-phase3-1-ch0'].content),
       createChapter('livre-phase3-1-ch1', UPDATED_CHAPTERS['livre-phase3-1-ch1'].title, UPDATED_CHAPTERS['livre-phase3-1-ch1'].content),
@@ -428,7 +428,7 @@ export const UPDATED_PARTS: BookPart[] = [
   },
   {
     id: 'p4',
-    title: "Partie III : Alimentation Moderne & Stress",
+    title: "Alimentation Moderne & Stress",
     chapters: [
       createChapter('livre-phase4-1-ch0', UPDATED_CHAPTERS['livre-phase4-1-ch0'].title, UPDATED_CHAPTERS['livre-phase4-1-ch0'].content),
       createChapter('livre-phase4-1-ch1', UPDATED_CHAPTERS['livre-phase4-1-ch1'].title, UPDATED_CHAPTERS['livre-phase4-1-ch1'].content),
@@ -439,7 +439,7 @@ export const UPDATED_PARTS: BookPart[] = [
   },
   {
     id: 'p5',
-    title: "Partie IV : Inflammation",
+    title: "Inflammation",
     chapters: [
       createChapter('livre-phase5-ch0', UPDATED_CHAPTERS['livre-phase5-ch0'].title, UPDATED_CHAPTERS['livre-phase5-ch0'].content),
       createChapter('livre-phase5-ch1', UPDATED_CHAPTERS['livre-phase5-ch1'].title, UPDATED_CHAPTERS['livre-phase5-ch1'].content),
@@ -449,7 +449,7 @@ export const UPDATED_PARTS: BookPart[] = [
   },
   {
     id: 'p6',
-    title: "Partie V : Migraines & Café",
+    title: "Migraines & Café",
     chapters: [
       createChapter('livre-phase6-ch0', UPDATED_CHAPTERS['livre-phase6-ch0'].title, UPDATED_CHAPTERS['livre-phase6-ch0'].content),
       createChapter('livre-phase6-ch1', UPDATED_CHAPTERS['livre-phase6-ch1'].title, UPDATED_CHAPTERS['livre-phase6-ch1'].content),
@@ -458,7 +458,7 @@ export const UPDATED_PARTS: BookPart[] = [
   },
   {
     id: 'p7',
-    title: "Partie VI : Coups de Pouce & Hijama",
+    title: "Coups de Pouce & Hijama",
     chapters: [
       createChapter('livre-phase7-ch0', UPDATED_CHAPTERS['livre-phase7-ch0'].title, UPDATED_CHAPTERS['livre-phase7-ch0'].content),
       createChapter('livre-phase7-ch1', UPDATED_CHAPTERS['livre-phase7-ch1'].title, UPDATED_CHAPTERS['livre-phase7-ch1'].content),
@@ -470,7 +470,7 @@ export const UPDATED_PARTS: BookPart[] = [
   },
   {
     id: 'p9',
-    title: "Partie VIII : Remèdes & Aliments",
+    title: "Remèdes & Aliments",
     chapters: [
       createChapter('livre-phase9-ch0', UPDATED_CHAPTERS['livre-phase9-ch0'].title, UPDATED_CHAPTERS['livre-phase9-ch0'].content),
       createChapter('livre-phase9-ch1', UPDATED_CHAPTERS['livre-phase9-ch1'].title, UPDATED_CHAPTERS['livre-phase9-ch1'].content),

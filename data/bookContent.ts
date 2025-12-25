@@ -97,86 +97,86 @@ const IMPORTED_BOOK_DATA: BookStructure = {
     // Part 2: Le Jeûne & le Corps (from updated DOCX)
     updatedPartsMap['p2'] || {
       id: 'p2',
-      title: 'Partie I : Le Jeûne & le Corps',
+      title: 'Le Jeûne & le Corps',
       chapters: [],
     },
     // Part 3: Nutrition & Pathologies (from updated DOCX)
     updatedPartsMap['p3'] || {
       id: 'p3',
-      title: 'Partie II : Nutrition & Pathologies',
+      title: 'Nutrition & Pathologies',
       chapters: [],
     },
     // Part 4: Alimentation Moderne & Stress (from updated DOCX)
     updatedPartsMap['p4'] || {
       id: 'p4',
-      title: 'Partie III : Alimentation Moderne & Stress',
+      title: 'Alimentation Moderne & Stress',
       chapters: [],
     },
     // Part 5: Inflammation (from updated DOCX)
     updatedPartsMap['p5'] || {
       id: 'p5',
-      title: 'Partie IV : Inflammation',
+      title: 'Inflammation',
       chapters: [],
     },
     // Part 6: Migraines & Café (from updated DOCX)
     updatedPartsMap['p6'] || {
       id: 'p6',
-      title: 'Partie V : Migraines & Café',
+      title: 'Migraines & Café',
       chapters: [],
     },
     // Part 7: Coups de Pouce & Hijama (from updated DOCX)
     updatedPartsMap['p7'] || {
       id: 'p7',
-      title: 'Partie VI : Coups de Pouce & Hijama',
+      title: 'Coups de Pouce & Hijama',
       chapters: [],
     },
     // Part 8: Ramadan selon les Saisons (placeholder - to be updated)
     {
       id: 'p8',
-      title: 'Partie VII : Ramadan selon les Saisons',
+      title: 'Ramadan selon les Saisons',
       chapters: PART_8_CHAPTERS,
     },
     // Part 9: Remèdes & Aliments (from updated DOCX)
     updatedPartsMap['p9'] || {
       id: 'p9',
-      title: 'Partie VIII : Remèdes & Aliments',
+      title: 'Remèdes & Aliments',
       chapters: [],
     },
     // Part 10: Diabète (placeholder - to be updated)
     {
       id: 'p10',
-      title: 'Partie IX : Diabète',
+      title: 'Diabète',
       chapters: PART_10_CHAPTERS,
     },
     // === REMAINING CHAPTERS FROM DOCX (Phases 11-18) ===
     {
       id: 'p11',
-      title: 'Partie X : Nutriments Essentiels',
+      title: 'Nutriments Essentiels',
       chapters: REMAINING_CHAPTERS.slice(0, 3),
     },
     {
       id: 'p12',
-      title: 'Partie XI : Conseils Pratiques',
+      title: 'Conseils Pratiques',
       chapters: REMAINING_CHAPTERS.slice(3, 10),
     },
     {
       id: 'p13',
-      title: 'Partie XII : Aromathérapie & Fin Ramadan',
+      title: 'Aromathérapie & Fin Ramadan',
       chapters: REMAINING_CHAPTERS.slice(10, 14),
     },
     {
       id: 'p14',
-      title: 'Partie XIII : Boissons & Jus',
+      title: 'Boissons & Jus',
       chapters: REMAINING_CHAPTERS.slice(14, 16),
     },
     {
       id: 'p15',
-      title: 'Partie XIV : Recettes Salées',
+      title: 'Recettes Salées',
       chapters: REMAINING_CHAPTERS.slice(16, 52),
     },
     {
       id: 'p16',
-      title: 'Partie XV : Desserts & Douceurs',
+      title: 'Desserts & Douceurs',
       chapters: REMAINING_CHAPTERS.slice(52, 67),
     },
     {
