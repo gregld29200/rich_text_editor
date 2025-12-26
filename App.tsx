@@ -826,9 +826,14 @@ function App() {
       
       if (remoteStructure) {
         // Load from Firebase - Firebase is the source of truth
+        // Clean up "Partie X :" prefixes from section titles (migration)
+        const cleanPartTitle = (title: string) => 
+          title.replace(/^Partie\s+[IVXLCDM]+\s*:\s*/i, '');
+        
         const hydratedStructure: BookStructure = {
           parts: remoteStructure.parts.map(p => ({
             ...p,
+            title: cleanPartTitle(p.title),
             chapters: p.chapters.map(c => ({
               ...c,
               content: c.content || '',
@@ -836,6 +841,13 @@ function App() {
             }))
           }))
         };
+        
+        // Save cleaned structure back to Firebase (one-time migration)
+        const needsMigration = remoteStructure.parts.some(p => /^Partie\s+[IVXLCDM]+\s*:/i.test(p.title));
+        if (needsMigration) {
+          await saveBookStructure(hydratedStructure);
+        }
+        
         setBookData(hydratedStructure);
         
         // Select first chapter if available
