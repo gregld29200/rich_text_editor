@@ -430,3 +430,57 @@ GitHub-triggered builds may use cached artifacts or fail silently.
 5. **Table Templates** - could add more predefined table styles/themes
 6. **Cloudflare Deployment** - Consider disabling GitHub integration to avoid stale builds, or configure cache purging
 7. **Front Matter DOCX/HTML Export** - Currently only exports to LaTeX; could extend to other formats
+
+---
+
+### 8. Cross-Section Chapter Drag-and-Drop (Dec 30, 2025)
+
+**Feature:** Move chapters between different sections (parts) using drag-and-drop, not just reorder within the same section.
+
+**Problem:** Previously, each section had its own `DndContext`, so chapters could only be reordered within their own section, not moved to a different section.
+
+**Solution:** Refactored to use a single `DndContext` wrapping all sections with cross-section move detection.
+
+**Implementation:**
+
+**Sidebar.tsx Changes:**
+- Added `DragOverEvent`, `DragStartEvent`, `useDroppable` imports from `@dnd-kit/core`
+- Added new prop `onMoveChapter?: (chapterId, fromPartId, toPartId, newIndex) => void`
+- Created `findPartForChapter()` helper to identify which part a chapter belongs to
+- Created `DroppablePartArea` component with visual feedback for each section's drop zone
+- Added state tracking: `activeChapterId` and `overPartId` for drag state
+- Replaced multiple `DndContext` (one per part) with **single DndContext** wrapping all parts
+- New handlers: `handleDragStart`, `handleDragOver`, `handleDragEnd` that detect cross-section moves
+
+**App.tsx Changes:**
+- Added `handleMoveChapter(chapterId, fromPartId, toPartId, newIndex)` function
+- Removes chapter from source part and inserts at precise position in target part
+- Auto-saves to Firebase
+
+**Visual Feedback:**
+- Section header and border highlight in gold when dragging a chapter over a different section
+- Precise positioning: drop on a chapter to insert before it, drop on empty area to append
+
+**User Flow:**
+1. Drag a chapter from any section
+2. Hover over another section → gold highlight appears
+3. Drop on specific chapter → insert at that position
+4. Drop on empty area → append to end
+5. Changes auto-save to Firebase
+
+**Files Modified:**
+- `components/Sidebar.tsx` - Single DndContext, cross-section detection, visual feedback
+- `App.tsx` - Added `handleMoveChapter` handler and passed to Sidebar
+
+---
+
+## Future Considerations
+
+1. **PDF via Overleaf** requires user to click "Recompile" - could explore server-side compilation for one-click PDF
+2. **AI Assistant** could be extended to analyze full book consistency across chapters
+3. **DOCX Export** still has the heuristic heading detection but wasn't fully tested this session
+4. **Table Editing** - could add in-place table editing (add/remove rows/columns)
+5. **Table Templates** - could add more predefined table styles/themes
+6. **Cloudflare Deployment** - Consider disabling GitHub integration to avoid stale builds, or configure cache purging
+7. **Front Matter DOCX/HTML Export** - Currently only exports to LaTeX; could extend to other formats
+8. **Chapter Delete Confirmation** - Add confirmation dialog when deleting chapters to prevent accidental data loss
