@@ -636,6 +636,52 @@ function App() {
     }
   };
 
+  // --- Move Chapter Between Sections ---
+  const handleMoveChapter = async (chapterId: string, fromPartId: string, toPartId: string, newIndex: number) => {
+    // Find the chapter to move
+    const fromPart = bookData.parts.find(p => p.id === fromPartId);
+    const chapter = fromPart?.chapters.find(c => c.id === chapterId);
+    
+    if (!chapter || !fromPart) {
+      console.error("Chapter not found for move operation");
+      return;
+    }
+
+    const newBookData: BookStructure = {
+      ...bookData,
+      parts: bookData.parts.map(part => {
+        if (part.id === fromPartId) {
+          // Remove chapter from source part
+          return {
+            ...part,
+            chapters: part.chapters.filter(c => c.id !== chapterId)
+          };
+        }
+        if (part.id === toPartId) {
+          // Add chapter to target part at specified index
+          const newChapters = [...part.chapters];
+          newChapters.splice(newIndex, 0, chapter);
+          return {
+            ...part,
+            chapters: newChapters
+          };
+        }
+        return part;
+      })
+    };
+
+    setBookData(newBookData);
+
+    if (firebaseActive) {
+      try {
+        await saveBookStructure(newBookData);
+        console.log(`Chapter moved from ${fromPartId} to ${toPartId}`);
+      } catch (e) {
+        console.error("Failed to save chapter move", e);
+      }
+    }
+  };
+
   // --- Front Matter Handlers ---
   const handleSelectFrontMatter = (section: FrontMatterSection) => {
     // Deselect any chapter when selecting front matter
@@ -997,6 +1043,7 @@ function App() {
         onSelectFrontMatter={handleSelectFrontMatter}
         onAddChapter={handleAddChapter}
         onReorderChapter={handleReorderChapter}
+        onMoveChapter={handleMoveChapter}
         onRenameChapter={handleRenameChapter}
       />
 

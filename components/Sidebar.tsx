@@ -9,6 +9,9 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -27,6 +30,7 @@ interface SidebarProps {
   onSelectFrontMatter: (section: FrontMatterSection) => void;
   onAddChapter: () => void;
   onReorderChapter?: (partId: string, oldIndex: number, newIndex: number) => void;
+  onMoveChapter?: (chapterId: string, fromPartId: string, toPartId: string, newIndex: number) => void;
   onRenameChapter?: (chapterId: string, newTitle: string) => void;
 }
 
@@ -165,6 +169,36 @@ const SortableChapter: React.FC<SortableChapterProps> = ({
   );
 };
 
+// Helper to find which part a chapter belongs to
+const findPartForChapter = (structure: BookStructure, chapterId: string): string | null => {
+  for (const part of structure.parts) {
+    if (part.chapters.some(c => c.id === chapterId)) {
+      return part.id;
+    }
+  }
+  return null;
+};
+
+// Droppable wrapper for each part's chapter list
+const DroppablePartArea: React.FC<{
+  partId: string;
+  isOver: boolean;
+  children: React.ReactNode;
+}> = ({ partId, isOver, children }) => {
+  const { setNodeRef } = useDroppable({ id: `part-${partId}` });
+  
+  return (
+    <div
+      ref={setNodeRef}
+      className={`ml-4 mt-1 space-y-1 border-l pl-2 transition-colors ${
+        isOver ? 'border-brand-gold bg-brand-gold/5' : 'border-gray-100'
+      }`}
+    >
+      {children}
+    </div>
+  );
+};
+
 const Sidebar: React.FC<SidebarProps> = ({
   structure,
   currentSectionId,
@@ -173,6 +207,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onSelectFrontMatter,
   onAddChapter,
   onReorderChapter,
+  onMoveChapter,
   onRenameChapter
 }) => {
   const [expandedParts, setExpandedParts] = useState<Record<string, boolean>>({
@@ -180,6 +215,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     'p2': true
   });
   const [frontMatterExpanded, setFrontMatterExpanded] = useState(true);
+  const [activeChapterId, setActiveChapterId] = useState<string | null>(null);
+  const [overPartId, setOverPartId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -207,15 +244,84 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  const handleDragEnd = (partId: string) => (event: DragEndEvent) => {
-    const { active, over } = event;
+  // Get all chapter IDs across all parts for a single SortableContext
+  const allChapterIds = structure.parts.flatMap(part => part.chapters.map(c => c.id));
 
-    if (over && active.id !== over.id) {
-      const part = structure.parts.find(p => p.id === partId);
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveChapterId(event.active.id as string);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { over } = event;
+    if (!over) {
+      setOverPartId(null);
+      return;
+    }
+
+    // Check if hovering over a part drop zone
+    const overId = over.id as string;
+    if (overId.startsWith('part-')) {
+      setOverPartId(overId.replace('part-', ''));
+    } else {
+      // Hovering over a chapter - find its part
+      const partId = findPartForChapter(structure, overId);
+      setOverPartId(partId);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    setActiveChapterId(null);
+    setOverPartId(null);
+
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    if (activeId === overId) return;
+
+    const fromPartId = findPartForChapter(structure, activeId);
+    if (!fromPartId) return;
+
+    // Determine target part and position
+    let toPartId: string;
+    let targetChapterId: string | null = null;
+
+    if (overId.startsWith('part-')) {
+      // Dropped on empty part area - add to end
+      toPartId = overId.replace('part-', '');
+    } else {
+      // Dropped on a chapter
+      toPartId = findPartForChapter(structure, overId) || fromPartId;
+      targetChapterId = overId;
+    }
+
+    if (fromPartId === toPartId) {
+      // Same part - reorder
+      const part = structure.parts.find(p => p.id === fromPartId);
       if (part && onReorderChapter) {
-        const oldIndex = part.chapters.findIndex(c => c.id === active.id);
-        const newIndex = part.chapters.findIndex(c => c.id === over.id);
-        onReorderChapter(partId, oldIndex, newIndex);
+        const oldIndex = part.chapters.findIndex(c => c.id === activeId);
+        const newIndex = part.chapters.findIndex(c => c.id === overId);
+        if (oldIndex !== -1 && newIndex !== -1) {
+          onReorderChapter(fromPartId, oldIndex, newIndex);
+        }
+      }
+    } else {
+      // Different part - move chapter
+      if (onMoveChapter) {
+        const toPart = structure.parts.find(p => p.id === toPartId);
+        let newIndex = toPart?.chapters.length || 0;
+        
+        if (targetChapterId) {
+          const targetIndex = toPart?.chapters.findIndex(c => c.id === targetChapterId);
+          if (targetIndex !== undefined && targetIndex !== -1) {
+            newIndex = targetIndex;
+          }
+        }
+        
+        onMoveChapter(activeId, fromPartId, toPartId, newIndex);
       }
     }
   };
@@ -288,28 +394,37 @@ const Sidebar: React.FC<SidebarProps> = ({
         {/* Separator */}
         <div className="border-t border-gray-200"></div>
 
-        {/* Book Parts */}
-        {structure.parts.map((part) => (
-          <div key={part.id} className="select-none">
-            <button
-              onClick={() => togglePart(part.id)}
-              className="flex items-center gap-2 w-full text-left p-2 hover:bg-gray-50 rounded text-brand-green font-semibold"
-            >
-              {expandedParts[part.id] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-              <span className="truncate">{part.title}</span>
-            </button>
-
-            {expandedParts[part.id] && (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd(part.id)}
-              >
-                <SortableContext
-                  items={part.chapters.map(c => c.id)}
-                  strategy={verticalListSortingStrategy}
+        {/* Book Parts - Single DndContext for cross-section drag */}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={allChapterIds}
+            strategy={verticalListSortingStrategy}
+          >
+            {structure.parts.map((part) => (
+              <div key={part.id} className="select-none">
+                <button
+                  onClick={() => togglePart(part.id)}
+                  className={`flex items-center gap-2 w-full text-left p-2 hover:bg-gray-50 rounded font-semibold transition-colors ${
+                    overPartId === part.id && activeChapterId && findPartForChapter(structure, activeChapterId) !== part.id
+                      ? 'bg-brand-gold/20 text-brand-gold'
+                      : 'text-brand-green'
+                  }`}
                 >
-                  <div className="ml-4 mt-1 space-y-1 border-l border-gray-100 pl-2">
+                  {expandedParts[part.id] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                  <span className="truncate">{part.title}</span>
+                </button>
+
+                {expandedParts[part.id] && (
+                  <DroppablePartArea 
+                    partId={part.id} 
+                    isOver={overPartId === part.id && activeChapterId !== null && findPartForChapter(structure, activeChapterId) !== part.id}
+                  >
                     {part.chapters.map((chapter) => (
                       <SortableChapter
                         key={chapter.id}
@@ -320,12 +435,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                         getStatusIcon={getStatusIcon}
                       />
                     ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-            )}
-          </div>
-        ))}
+                  </DroppablePartArea>
+                )}
+              </div>
+            ))}
+          </SortableContext>
+        </DndContext>
       </div>
 
       {/* Action Buttons */}
