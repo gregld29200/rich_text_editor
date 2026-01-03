@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { BookStructure, SectionStatus, FrontMatterSection } from '../types';
-import { ChevronRight, ChevronDown, FileText, CheckCircle, Clock, BookOpen, Plus, GripVertical, Check, X, ClipboardList, BookCopy, ListTree } from './Icons';
+import { ChevronRight, ChevronDown, FileText, CheckCircle, Clock, BookOpen, Plus, GripVertical, Check, X, ClipboardList, BookCopy, ListTree, Trash2 } from './Icons';
 import {
   DndContext,
   closestCenter,
@@ -32,6 +32,7 @@ interface SidebarProps {
   onReorderChapter?: (partId: string, oldIndex: number, newIndex: number) => void;
   onMoveChapter?: (chapterId: string, fromPartId: string, toPartId: string, newIndex: number) => void;
   onRenameChapter?: (chapterId: string, newTitle: string) => void;
+  onDeletePart?: (partId: string) => void;
 }
 
 interface SortableChapterProps {
@@ -208,7 +209,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onAddChapter,
   onReorderChapter,
   onMoveChapter,
-  onRenameChapter
+  onRenameChapter,
+  onDeletePart
 }) => {
   const [expandedParts, setExpandedParts] = useState<Record<string, boolean>>({
     'p1': true,
@@ -407,18 +409,36 @@ const Sidebar: React.FC<SidebarProps> = ({
             strategy={verticalListSortingStrategy}
           >
             {structure.parts.map((part) => (
-              <div key={part.id} className="select-none">
-                <button
-                  onClick={() => togglePart(part.id)}
-                  className={`flex items-center gap-2 w-full text-left p-2 hover:bg-gray-50 rounded font-semibold transition-colors ${
-                    overPartId === part.id && activeChapterId && findPartForChapter(structure, activeChapterId) !== part.id
-                      ? 'bg-brand-gold/20 text-brand-gold'
-                      : 'text-brand-green'
-                  }`}
-                >
-                  {expandedParts[part.id] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                  <span className="truncate">{part.title}</span>
-                </button>
+              <div key={part.id} className="select-none group/part">
+                <div className={`flex items-center gap-1 rounded transition-colors ${
+                  overPartId === part.id && activeChapterId && findPartForChapter(structure, activeChapterId) !== part.id
+                    ? 'bg-brand-gold/20'
+                    : 'hover:bg-gray-50'
+                }`}>
+                  <button
+                    onClick={() => togglePart(part.id)}
+                    className={`flex-1 flex items-center gap-2 text-left p-2 font-semibold transition-colors ${
+                      overPartId === part.id && activeChapterId && findPartForChapter(structure, activeChapterId) !== part.id
+                        ? 'text-brand-gold'
+                        : 'text-brand-green'
+                    }`}
+                  >
+                    {expandedParts[part.id] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                    <span className="truncate">{part.title}</span>
+                  </button>
+                  {onDeletePart && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeletePart(part.id);
+                      }}
+                      className="p-1.5 mr-1 opacity-0 group-hover/part:opacity-100 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-all"
+                      title={`Supprimer "${part.title}"`}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
 
                 {expandedParts[part.id] && (
                   <DroppablePartArea 

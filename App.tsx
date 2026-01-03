@@ -8,7 +8,7 @@ import SettingsModal from './components/SettingsModal';
 import FeedbackModal from './components/FeedbackModal';
 import TitlePageEditor from './components/TitlePageEditor';
 import TableOfContents from './components/TableOfContents';
-import { BookStructure, BookSection, SectionStatus, BookVersion, ViewMode, FrontMatter, FrontMatterSection, TitlePageData } from './types';
+import { BookStructure, BookSection, BookPart, SectionStatus, BookVersion, ViewMode, FrontMatter, FrontMatterSection, TitlePageData } from './types';
 import IMPORTED_BOOK_DATA from './data/bookContent';
 import { Download, Printer, Settings, FileUp, Volume2, Square, Loader2, HelpCircle, RotateCcw, ChevronDown, FileText, FileDown, Save, MessageSquareText, Trash2, Undo, X } from './components/Icons';
 import WelcomeGuide, { useWelcomeGuide } from './components/WelcomeGuide';
@@ -80,6 +80,13 @@ function App() {
     index: number;
   } | null>(null);
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Deleted Part Undo State
+  const [deletedPart, setDeletedPart] = useState<{
+    part: BookPart;
+    index: number;
+  } | null>(null);
+  const undoPartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Audio State
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
@@ -857,6 +864,91 @@ function App() {
     }
   };
 
+  const handleDeletePart = async (partId: string) => {
+    const partIndex = bookData.parts.findIndex(p => p.id === partId);
+    if (partIndex === -1) return;
+
+    const partToDelete = bookData.parts[partIndex];
+    
+    if (partToDelete.chapters.length > 0) {
+      const confirmed = confirm(
+        `Supprimer "${partToDelete.title}" et ses ${partToDelete.chapters.length} chapitre(s) ?\n\nCette action peut être annulée pendant 10 secondes.`
+      );
+      if (!confirmed) return;
+    }
+
+    if (undoPartTimeoutRef.current) {
+      clearTimeout(undoPartTimeoutRef.current);
+    }
+
+    setDeletedPart({
+      part: { ...partToDelete, chapters: [...partToDelete.chapters] },
+      index: partIndex
+    });
+
+    undoPartTimeoutRef.current = setTimeout(() => {
+      setDeletedPart(null);
+    }, 10000);
+
+    const newBookData: BookStructure = {
+      ...bookData,
+      parts: bookData.parts.filter(p => p.id !== partId)
+    };
+
+    if (currentSectionId && partToDelete.chapters.some(c => c.id === currentSectionId)) {
+      const nextPart = newBookData.parts[0];
+      setCurrentSectionId(nextPart?.chapters[0]?.id || null);
+    }
+
+    setBookData(newBookData);
+
+    if (firebaseActive) {
+      try {
+        await saveBookStructure(newBookData);
+      } catch (e) {
+        console.error("Failed to save part deletion", e);
+      }
+    }
+  };
+
+  const handleUndoDeletePart = async () => {
+    if (!deletedPart) return;
+
+    if (undoPartTimeoutRef.current) {
+      clearTimeout(undoPartTimeoutRef.current);
+      undoPartTimeoutRef.current = null;
+    }
+
+    const { part, index } = deletedPart;
+
+    const newParts = [...bookData.parts];
+    const insertIndex = Math.min(index, newParts.length);
+    newParts.splice(insertIndex, 0, part);
+
+    const newBookData: BookStructure = {
+      ...bookData,
+      parts: newParts
+    };
+
+    setBookData(newBookData);
+    setDeletedPart(null);
+
+    if (part.chapters.length > 0) {
+      setCurrentSectionId(part.chapters[0].id);
+    }
+
+    if (firebaseActive) {
+      try {
+        await saveBookStructure(newBookData);
+        for (const chapter of part.chapters) {
+          await saveSectionContent(chapter.id, chapter.content, chapter.status);
+        }
+      } catch (e) {
+        console.error("Failed to restore part", e);
+      }
+    }
+  };
+
   const handleFirebaseConfig = async (config?: any) => {
     try {
       initFirebase(config);
@@ -864,7 +956,6 @@ function App() {
       
       const remoteStructure = await loadBookStructure();
       
-      // Load front matter
       const remoteFrontMatter = await loadFrontMatter();
       if (remoteFrontMatter) {
         setFrontMatter(remoteFrontMatter);
@@ -1045,6 +1136,7 @@ function App() {
         onReorderChapter={handleReorderChapter}
         onMoveChapter={handleMoveChapter}
         onRenameChapter={handleRenameChapter}
+        onDeletePart={handleDeletePart}
       />
 
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
@@ -1305,7 +1397,6 @@ function App() {
         </div>
       </div>
 
-      {/* Undo Delete Toast */}
       {deletedChapter && (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
           <div className="bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-4">
@@ -1321,6 +1412,30 @@ function App() {
             </button>
             <button
               onClick={() => setDeletedChapter(null)}
+              className="p-1 hover:bg-gray-700 rounded transition-colors"
+              title="Fermer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {deletedPart && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
+          <div className="bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-4">
+            <span className="text-sm">
+              Partie "{deletedPart.part.title}" supprimee ({deletedPart.part.chapters.length} chapitres)
+            </span>
+            <button
+              onClick={handleUndoDeletePart}
+              className="flex items-center gap-1 px-3 py-1 bg-brand-gold text-gray-900 rounded font-medium text-sm hover:bg-yellow-400 transition-colors"
+            >
+              <Undo className="w-4 h-4" />
+              Annuler
+            </button>
+            <button
+              onClick={() => setDeletedPart(null)}
               className="p-1 hover:bg-gray-700 rounded transition-colors"
               title="Fermer"
             >
