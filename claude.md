@@ -474,6 +474,52 @@ GitHub-triggered builds may use cached artifacts or fail silently.
 
 ---
 
+### 9. Part (Section) Deletion Feature (Jan 3, 2026)
+
+**Feature:** Allow users to delete entire parts/sections (e.g., "Alimentation Moderne & Stress") from the sidebar, not just individual chapters.
+
+**Problem:** Users could only delete chapters but had no way to remove parent sections/parts from the book structure.
+
+**Solution:** Added delete button on part headers with confirmation dialog and undo functionality.
+
+**Implementation:**
+
+**App.tsx Changes:**
+- Added `deletedPart` state to track deleted part for undo functionality
+- Added `undoPartTimeoutRef` for 10-second undo window
+- Added `handleDeletePart(partId)` function:
+  - Shows confirmation if part contains chapters
+  - Saves part for undo before deletion
+  - Updates current selection if deleted part contained selected chapter
+  - Syncs with Firebase
+- Added `handleUndoDeletePart()` function to restore deleted part
+- Added undo toast UI for deleted parts (matching chapter delete toast style)
+- Passed `onDeletePart` prop to Sidebar
+
+**Sidebar.tsx Changes:**
+- Added `onDeletePart?: (partId: string) => void` to SidebarProps interface
+- Added `Trash2` icon import
+- Restructured part header to include delete button:
+  - Wrapped in flex container with `group/part` for hover detection
+  - Delete button appears on hover (opacity transition)
+  - Red trash icon with hover effects
+  - Positioned to the right of part title
+
+**User Flow:**
+1. Hover over a part title in sidebar
+2. Red trash icon appears on the right
+3. Click trash icon
+4. If part has chapters → confirmation dialog appears
+5. Part is deleted, toast appears at bottom
+6. 10 seconds to click "Annuler" to restore
+7. Changes auto-save to Firebase
+
+**Files Modified:**
+- `App.tsx` - State, handlers, undo toast UI
+- `components/Sidebar.tsx` - Delete button UI, prop interface
+
+---
+
 ## Future Considerations
 
 1. **PDF via Overleaf** requires user to click "Recompile" - could explore server-side compilation for one-click PDF
@@ -483,4 +529,4 @@ GitHub-triggered builds may use cached artifacts or fail silently.
 5. **Table Templates** - could add more predefined table styles/themes
 6. **Cloudflare Deployment** - Consider disabling GitHub integration to avoid stale builds, or configure cache purging
 7. **Front Matter DOCX/HTML Export** - Currently only exports to LaTeX; could extend to other formats
-8. **Chapter Delete Confirmation** - Add confirmation dialog when deleting chapters to prevent accidental data loss
+8. **Chapter Delete Confirmation** - Consider adding confirmation dialog when deleting chapters (parts already have confirmation + both have 10-second undo)
